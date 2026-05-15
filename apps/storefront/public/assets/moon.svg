@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" aria-hidden="true">
+  <defs>
+    <radialGradient id="m-disc" cx="42%" cy="38%" r="58%">
+      <stop offset="0%" stop-color="#f5edd4"/>
+      <stop offset="35%" stop-color="#e4d8b0"/>
+      <stop offset="70%" stop-color="#c8b888"/>
+      <stop offset="100%" stop-color="#a89868"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ambient glow — warm muted rings -->
+  <circle cx="200" cy="200" r="192" fill="#3a3020" opacity="0.02"/>
+  <circle cx="200" cy="200" r="175" fill="#5a4c30" opacity="0.03"/>
+  <circle cx="200" cy="200" r="158" fill="#8a7a50" opacity="0.04"/>
+  <circle cx="200" cy="200" r="142" fill="#a09060" opacity="0.05"/>
+  <circle cx="200" cy="200" r="128" fill="#b8a870" opacity="0.06"/>
+
+  <!-- Inner halo — warm parchment rings -->
+  <circle cx="200" cy="200" r="114" fill="#c8b888" opacity="0.08"/>
+  <circle cx="200" cy="200" r="102" fill="#d4c8a0" opacity="0.10"/>
+  <circle cx="200" cy="200" r="91"  fill="#ddd0ac" opacity="0.13"/>
+  <circle cx="200" cy="200" r="81"  fill="#e6dbb8" opacity="0.16"/>
+  <circle cx="200" cy="200" r="72"  fill="#ece4c4" opacity="0.20"/>
+
+  <!-- Bright rim -->
+  <circle cx="200" cy="200" r="64"  fill="#f0e8cc" opacity="0.25"/>
+
+  <!-- Disc body -->
+  <circle cx="200" cy="200" r="55" fill="url(#m-disc)"/>
+
+  <!-- Craters — muted amber-brown -->
+  <g fill="#8a7a50" opacity="0.22">
+    <ellipse cx="186" cy="184" rx="9" ry="6.5"/>
+    <ellipse cx="216" cy="196" rx="5" ry="4"/>
+    <ellipse cx="194" cy="218" rx="7" ry="5.5"/>
+    <ellipse cx="222" cy="220" rx="3" ry="2.5"/>
+    <ellipse cx="176" cy="206" rx="2.5" ry="2.5"/>
+    <ellipse cx="210" cy="172" rx="2.5" ry="1.8"/>
+  </g>
+</svg>

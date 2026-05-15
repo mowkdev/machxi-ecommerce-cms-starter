@@ -1,38 +1,64 @@
-import { Heading, Text } from "@modules/common/components/ui"
-import TransferActions from "@modules/order/components/transfer-actions"
-import TransferImage from "@modules/order/components/transfer-image"
+import LocalizedLink from "@/modules/common/components/localized-link"
 
-export default async function TransferPage({
+export const metadata = {
+  title: "Transfer order — Dabasberns",
+}
+
+export default async function TransferLandingPage({
   params,
 }: {
-  params: { id: string; token: string }
+  params: Promise<{ countryCode: string; id: string; token: string }>
 }) {
-  const { id, token } = params
+  const { id, token } = await params
 
   return (
-    <div className="flex flex-col gap-y-4 items-start w-2/5 mx-auto mt-10 mb-20">
-      <TransferImage />
-      <div className="flex flex-col gap-y-6">
-        <Heading level="h1" className="text-xl text-zinc-900">
-          Transfer request for order {id}
-        </Heading>
-        <Text className="text-zinc-600">
-          You&#39;ve received a request to transfer ownership of your order ({id}).
-          If you agree to this request, you can approve the transfer by clicking
-          the button below.
-        </Text>
-        <div className="w-full h-px bg-zinc-200" />
-        <Text className="text-zinc-600">
-          If you accept, the new owner will take over all responsibilities and
-          permissions associated with this order.
-        </Text>
-        <Text className="text-zinc-600">
-          If you do not recognize this request or wish to retain ownership, no
-          further action is required.
-        </Text>
-        <div className="w-full h-px bg-zinc-200" />
-        <TransferActions id={id} token={token} />
+    <main className="shop" data-screen-label="Transfer order">
+      <div className="crumb">
+        <LocalizedLink href="/">Dabasberns</LocalizedLink>
+        <span className="sep">/</span>
+        <span className="now">Transfer order</span>
       </div>
-    </div>
+
+      <div className="auth-shell">
+        <div className="auth-head">
+          <span className="eyebrow">Transfer request</span>
+          <h1>Take over this order</h1>
+          <p className="sub">
+            Someone has invited you to take ownership of order{" "}
+            <strong style={{ color: "var(--ink)" }}>#{id.slice(-8)}</strong>.
+            You&apos;ll see it in your account once you accept.
+          </p>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+            marginTop: 8,
+          }}
+        >
+          <LocalizedLink
+            href={`/order/${id}/transfer/${token}/accept`}
+            className="auth-cta"
+            style={{ textDecoration: "none" }}
+          >
+            <span>Accept transfer</span>
+            <span>→</span>
+          </LocalizedLink>
+          <LocalizedLink
+            href={`/order/${id}/transfer/${token}/decline`}
+            className="link-mini"
+            style={{
+              textAlign: "center",
+              color: "var(--ink-soft)",
+              marginTop: 4,
+            }}
+          >
+            Decline
+          </LocalizedLink>
+        </div>
+      </div>
+    </main>
   )
 }

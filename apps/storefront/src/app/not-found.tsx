@@ -1,27 +1,55 @@
-import { ArrowUpRightMini } from "@medusajs/icons"
-import { Text } from "@modules/common/components/ui"
-import { Metadata } from "next"
 import Link from "next/link"
-
-export const metadata: Metadata = {
-  title: "404",
-  description: "Something went wrong",
-}
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col gap-4 items-center justify-center min-h-[calc(100vh-64px)]">
-      <h1 className="text-2xl-semi text-ui-fg-base">Page not found</h1>
-      <p className="text-small-regular text-ui-fg-base">
-        The page you tried to access does not exist.
+    <main
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "48px 24px",
+        textAlign: "center",
+        gap: 16,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 11,
+          letterSpacing: "0.32em",
+          textTransform: "uppercase",
+          color: "var(--ink-soft)",
+        }}
+      >
+        404
+      </span>
+      <h1
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "clamp(40px, 5vw, 64px)",
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+          margin: 0,
+          fontWeight: 400,
+        }}
+      >
+        Page not found
+      </h1>
+      <p style={{ color: "var(--ink-soft)", maxWidth: "40ch" }}>
+        The page you were looking for isn&apos;t here.{" "}
+        <Link
+          href="/"
+          style={{
+            color: "var(--ink)",
+            borderBottom: "1px solid currentColor",
+            textDecoration: "none",
+          }}
+        >
+          Back to home
+        </Link>
+        .
       </p>
-      <Link className="flex gap-x-1 items-center group" href="/">
-        <Text className="text-ui-fg-interactive">Go to frontpage</Text>
-        <ArrowUpRightMini
-          className="group-hover:rotate-45 ease-in-out duration-150"
-          color="var(--fg-interactive)"
-        />
-      </Link>
-    </div>
+    </main>
   )
 }

@@ -1,41 +1,47 @@
-import { declineTransferRequest } from "@lib/data/orders"
-import { Heading, Text } from "@modules/common/components/ui"
-import TransferImage from "@modules/order/components/transfer-image"
+import LocalizedLink from "@/modules/common/components/localized-link"
 
-export default async function TransferPage({
+import { declineTransferRequest } from "@/lib/data/orders"
+
+export const metadata = { title: "Transfer declined — Dabasberns" }
+
+export default async function DeclineTransferPage({
   params,
 }: {
-  params: { id: string; token: string }
+  params: Promise<{ countryCode: string; id: string; token: string }>
 }) {
-  const { id, token } = params
-
-  const { success, error } = await declineTransferRequest(id, token)
+  const { id, token } = await params
+  const result = await declineTransferRequest(id, token)
 
   return (
-    <div className="flex flex-col gap-y-4 items-start w-2/5 mx-auto mt-10 mb-20">
-      <TransferImage />
-      <div className="flex flex-col gap-y-6">
-        {success && (
-          <>
-            <Heading level="h1" className="text-xl text-zinc-900">
-              Order transfer declined!
-            </Heading>
-            <Text className="text-zinc-600">
-              Transfer of order {id} has been successfully declined.
-            </Text>
-          </>
-        )}
-        {!success && (
-          <>
-            <Text className="text-zinc-600">
-              There was an error declining the transfer. Please try again.
-            </Text>
-            {error && (
-              <Text className="text-red-500">Error message: {error}</Text>
-            )}
-          </>
-        )}
+    <main className="shop" data-screen-label="Transfer declined">
+      <div className="crumb">
+        <LocalizedLink href="/">Dabasberns</LocalizedLink>
+        <span className="sep">/</span>
+        <span className="now">Transfer</span>
       </div>
-    </div>
+
+      <div className="auth-shell" style={{ textAlign: "center" }}>
+        <div className="auth-head">
+          <span className="eyebrow">
+            {result.success ? "Noted" : "Something went wrong"}
+          </span>
+          <h1>{result.success ? "Transfer declined" : "Could not decline"}</h1>
+          <p className="sub">
+            {result.success
+              ? "The original owner has been notified. No further action needed."
+              : (result.error ?? "The link may have expired.")}
+          </p>
+        </div>
+
+        <LocalizedLink
+          href="/"
+          className="auth-cta"
+          style={{ display: "inline-flex", textDecoration: "none" }}
+        >
+          <span>Back home</span>
+          <span>→</span>
+        </LocalizedLink>
+      </div>
+    </main>
   )
 }

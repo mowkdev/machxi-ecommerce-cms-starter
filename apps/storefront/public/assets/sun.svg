@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" aria-hidden="true">
+  <defs>
+    <radialGradient id="s-disc" cx="46%" cy="44%" r="50%">
+      <stop offset="0%" stop-color="#fdfcf6"/>
+      <stop offset="45%" stop-color="#f4f0e6"/>
+      <stop offset="78%" stop-color="#e6dcc8"/>
+      <stop offset="100%" stop-color="#d4c4a6"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ambient glow — concentric rings faking a gaussian blur -->
+  <circle cx="200" cy="200" r="195" fill="#dce6f0" opacity="0.02"/>
+  <circle cx="200" cy="200" r="175" fill="#e9e2d4" opacity="0.03"/>
+  <circle cx="200" cy="200" r="155" fill="#f4f0e6" opacity="0.05"/>
+  <circle cx="200" cy="200" r="138" fill="#f4f0e6" opacity="0.07"/>
+  <circle cx="200" cy="200" r="122" fill="#fdfcf6" opacity="0.09"/>
+
+  <!-- Inner halo — tighter, brighter rings -->
+  <circle cx="200" cy="200" r="108" fill="#fdfcf6" opacity="0.11"/>
+  <circle cx="200" cy="200" r="96"  fill="#fdfcf6" opacity="0.14"/>
+  <circle cx="200" cy="200" r="85"  fill="#fdfcf6" opacity="0.18"/>
+  <circle cx="200" cy="200" r="76"  fill="#fdfcf6" opacity="0.22"/>
+  <circle cx="200" cy="200" r="68"  fill="#fdfcf6" opacity="0.28"/>
+
+  <!-- Bright rim — feathers the disc edge -->
+  <circle cx="200" cy="200" r="62"  fill="#fdfcf6" opacity="0.35"/>
+
+  <!-- Disc body -->
+  <circle cx="200" cy="200" r="52" fill="url(#s-disc)"/>
+</svg>

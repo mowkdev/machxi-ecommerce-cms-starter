@@ -1,6 +1,14 @@
 import "server-only"
 import { cookies as nextCookies } from "next/headers"
 
+/**
+ * Data-cache directive applied to every Medusa Store API read.
+ * Dev: `no-store` — always hit the backend, so admin edits show up immediately.
+ * Prod: `force-cache` — Next's data cache holds responses until a tag is revalidated.
+ */
+export const STORE_CACHE: RequestCache =
+  process.env.NODE_ENV === "production" ? "force-cache" : "no-store"
+
 export const getAuthHeaders = async (): Promise<
   { authorization: string } | Record<string, never>
 > => {
@@ -46,7 +54,7 @@ export const getCacheOptions = async (
     return {}
   }
 
-  return { tags: [`${cacheTag}`] }
+  return { tags: [cacheTag] }
 }
 
 export const setAuthToken = async (token: string) => {
