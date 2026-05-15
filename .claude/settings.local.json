@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm exec *)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(git rm *)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"exit=$?\")"
+    ]
+  }
+}

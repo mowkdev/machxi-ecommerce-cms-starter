@@ -126,20 +126,48 @@ export function SceneLayer({
   }
 
   const resolvedMaskPosition = maskPosition ?? "0 0"
+  const maskStyle = {
+    ["--layer-color" as never]: layer.colorVar
+      ? `var(${layer.colorVar})`
+      : "transparent",
+    WebkitMaskImage: `url(${layer.mask})`,
+    maskImage: `url(${layer.mask})`,
+    WebkitMaskPosition: resolvedMaskPosition,
+    maskPosition: resolvedMaskPosition,
+  } as const
+
+  // Sway lives on an inner element so its CSS transform doesn't
+  // collide with Framer Motion's transform on the outer wrapper.
+  // The inner element pivots from its own bottom-center, which is
+  // the bottom of the layer box — i.e. where tree silhouettes are
+  // anchored by `maskPosition: "50% 9x%"`.
+  if (layer.sway) {
+    const swayBp = layer.sway.breakpoints[bp]
+    const swayVars = {
+      ["--sway-skew" as never]: swayBp.skewDeg,
+      ["--sway-duration" as never]: `${swayBp.durationSec}s`,
+      ["--sway-delay" as never]: `${layer.sway.phaseSec ?? 0}s`,
+      ["--sway-origin" as never]: layer.sway.origin ?? "50% 100%",
+    }
+    return (
+      <motion.div
+        aria-hidden
+        className="parallax-layer"
+        style={baseStyle}
+      >
+        <div
+          className="parallax-layer__sway parallax-layer--mask"
+          style={{ ...maskStyle, ...swayVars }}
+        />
+      </motion.div>
+    )
+  }
+
   return (
     <motion.div
       aria-hidden
       className="parallax-layer parallax-layer--mask"
-      style={{
-        ...baseStyle,
-        ["--layer-color" as never]: layer.colorVar
-          ? `var(${layer.colorVar})`
-          : "transparent",
-        WebkitMaskImage: `url(${layer.mask})`,
-        maskImage: `url(${layer.mask})`,
-        WebkitMaskPosition: resolvedMaskPosition,
-        maskPosition: resolvedMaskPosition,
-      }}
+      style={{ ...baseStyle, ...maskStyle }}
     />
   )
 }

@@ -92,6 +92,52 @@ export type ParallaxLayerBreakpointConfig = {
  */
 export type ParallaxLayerRenderMode = "mask" | "image"
 
+/**
+ * Per-breakpoint speed + amplitude for a sway animation. Speed and
+ * skew are the parts that scale with stage size, so they live here.
+ */
+export type ParallaxLayerSwayBreakpointConfig = {
+  /**
+   * Peak `skewX` in degrees during the cycle. The *sign* matters:
+   * adjacent tree layers should alternate signs so the field never
+   * tips as one rigid block — at any instant, neighbours lean in
+   * opposite directions.
+   */
+  skewDeg: number
+  /** Full cycle duration in seconds. */
+  durationSec: number
+}
+
+/**
+ * Wind-sway animation applied to a mask-mode layer (typically
+ * tree silhouettes). Driven entirely by a CSS keyframe animation,
+ * so it runs off the scroll/parallax path and stays smooth even
+ * when scrolling is idle.
+ */
+export type ParallaxLayerSway = {
+  /**
+   * Initial offset into the cycle, in seconds. Applied as a
+   * negative `animation-delay` so each tree layer starts mid-
+   * cycle and the field doesn't sway in unison.
+   */
+  phaseSec?: number
+  /**
+   * CSS `transform-origin` for the sway pivot. Defaults to
+   * `"50% 100%"` (bottom-center) so a layer with its silhouette
+   * pinned to the stage bottom bends at the trunks. For layers
+   * whose tree mass sits higher in their SVG, set a pivot inside
+   * the foliage (e.g. `"50% 67%"` for the closest band, `"50% 41%"`
+   * for the furthest) so the motion looks rooted in the trunks
+   * rather than at the silhouette's bounding-box edge.
+   */
+  origin?: string
+  /**
+   * Per-breakpoint speed + amplitude. All five breakpoints required —
+   * same explicit-everywhere policy as the rest of the layer config.
+   */
+  breakpoints: Record<BreakpointKey, ParallaxLayerSwayBreakpointConfig>
+}
+
 export type ParallaxLayer = {
   /** Unique id (used as React key) */
   id: string
@@ -140,6 +186,14 @@ export type ParallaxLayer = {
    */
   naturalWidth?: number
   naturalHeight?: number
+  /**
+   * Optional wind-sway animation. Only applies to `renderMode:
+   * "mask"` layers — the silhouette bends from its bottom edge
+   * around a `transform-origin: 50% 100%` pivot. Combine across
+   * the tree layers with staggered durations + phases to fake a
+   * gust blowing through the scene.
+   */
+  sway?: ParallaxLayerSway
   /**
    * Per-breakpoint config. All five breakpoints are required —
    * there are no defaults at the layer level.
@@ -310,6 +364,17 @@ export const parallaxConfig: ParallaxConfig = {
       id: "bg-trees-4",
       mask: "/assets/bg-trees-4.svg",
       colorVar: "--c-bg-trees-4",
+      sway: {
+        phaseSec: 0,
+        origin: "50% 41%",
+        breakpoints: {
+          xs: { skewDeg: 0.81, durationSec: 9.5 },
+          sm: { skewDeg: 0.9, durationSec: 9.5 },
+          md: { skewDeg: 0.99, durationSec: 9.0 },
+          lg: { skewDeg: 1.17, durationSec: 8.5 },
+          xl: { skewDeg: 1.26, durationSec: 8.5 },
+        },
+      },
       breakpoints: {
         xs: { start: 50, travel: -6, maskPosition: "50% 94%" },
         sm: { start: 40, travel: -9, maskPosition: "50% 94%" },
@@ -322,6 +387,18 @@ export const parallaxConfig: ParallaxConfig = {
       id: "bg-trees-3",
       mask: "/assets/bg-trees-3.svg",
       colorVar: "--c-bg-trees-3",
+      // Negative skew: leans opposite to bg-trees-4 at the same instant.
+      sway: {
+        phaseSec: -2.1,
+        origin: "50% 48%",
+        breakpoints: {
+          xs: { skewDeg: -1.08, durationSec: 8.5 },
+          sm: { skewDeg: -1.17, durationSec: 8.5 },
+          md: { skewDeg: -1.26, durationSec: 8.0 },
+          lg: { skewDeg: -1.44, durationSec: 7.5 },
+          xl: { skewDeg: -1.53, durationSec: 7.5 },
+        },
+      },
       breakpoints: {
         xs: { start: 50, travel: -6, maskPosition: "50% 95%" },
         sm: { start: 40, travel: -10, maskPosition: "50% 95%" },
@@ -364,6 +441,18 @@ export const parallaxConfig: ParallaxConfig = {
       id: "bg-trees-2",
       mask: "/assets/bg-trees-2.svg",
       colorVar: "--c-bg-trees-2",
+      // Positive skew: leans opposite to bg-trees-1 / bg-trees-3.
+      sway: {
+        phaseSec: -4.4,
+        origin: "50% 55%",
+        breakpoints: {
+          xs: { skewDeg: 1.82, durationSec: 7.2 },
+          sm: { skewDeg: 1.94, durationSec: 7.2 },
+          md: { skewDeg: 2.06, durationSec: 6.8 },
+          lg: { skewDeg: 2.3, durationSec: 6.4 },
+          xl: { skewDeg: 2.42, durationSec: 6.4 },
+        },
+      },
       breakpoints: {
         xs: { start: 50, travel: -7, maskPosition: "50% 96%" },
         sm: { start: 42, travel: -12, maskPosition: "50% 96%" },
@@ -376,6 +465,18 @@ export const parallaxConfig: ParallaxConfig = {
       id: "bg-trees-1",
       mask: "/assets/bg-trees-1.svg",
       colorVar: "--c-bg-trees-1",
+      // Negative skew + lowest pivot: closest band, biggest motion.
+      sway: {
+        phaseSec: -1.3,
+        origin: "50% 67%",
+        breakpoints: {
+          xs: { skewDeg: -2.38, durationSec: 6.4 },
+          sm: { skewDeg: -2.51, durationSec: 6.4 },
+          md: { skewDeg: -2.77, durationSec: 6.0 },
+          lg: { skewDeg: -3.04, durationSec: 5.6 },
+          xl: { skewDeg: -3.3, durationSec: 5.6 },
+        },
+      },
       breakpoints: {
         xs: { start: 50, travel: -9, maskPosition: "50% 97%" },
         sm: { start: 40, travel: -14, maskPosition: "50% 97%" },

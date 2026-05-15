@@ -3222,6 +3222,48 @@ html.lenis body {
   }
 
   /*
+   * Wind-sway inner wrapper.
+   * ---------------------------------------------------------------
+   * Lives inside a `.parallax-layer` (which already carries the
+   * Framer Motion parallax transform). Per-layer intensity, speed,
+   * phase, and pivot all come in as CSS vars set inline by the
+   * renderer from `parallaxConfig.layers[*].sway`:
+   *
+   *   --sway-skew     peak skewX in degrees (sign sets direction)
+   *   --sway-duration full cycle duration   (e.g. "6s")
+   *   --sway-delay    initial offset        (e.g. "-1.3s")
+   *   --sway-origin   transform-origin      (e.g. "50% 67%")
+   *
+   * The keyframe is a single-peak sine (0 → peak → 0) — combined
+   * with alternating signs on adjacent tree layers and staggered
+   * delays, the field never tips as one rigid block. Distant
+   * layers should use a higher pivot (lower Y%, e.g. `50% 41%`);
+   * closer layers a lower pivot (`50% 67%`) so the motion looks
+   * rooted in the trunks.
+   */
+  .parallax-layer__sway {
+    position: absolute;
+    inset: 0;
+    transform-origin: var(--sway-origin, 50% 100%);
+    animation:
+      tree-sway var(--sway-duration, 7s) ease-in-out
+      var(--sway-delay, 0s) infinite;
+    will-change: transform;
+  }
+
+  @keyframes tree-sway {
+    0%, 100% { transform: skewX(0deg); }
+    50%      { transform: skewX(calc(var(--sway-skew, 1) * 1deg)); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .parallax-layer__sway {
+      animation: none;
+      transform: none;
+    }
+  }
+
+  /*
    * Procedural starfield
    * ---------------------------------------------------------------
    * Stars are generated in `components/parallax/star-field.tsx` and
