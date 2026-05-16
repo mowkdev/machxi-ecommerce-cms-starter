@@ -6,7 +6,7 @@ import { getAuthHeaders, getCacheOptions, STORE_CACHE } from "./cookies"
 import { getRegion, retrieveRegion } from "./regions"
 
 const PRODUCT_FIELDS =
-  "*variants.calculated_price,+variants.inventory_quantity,*variants.options,*options,*options.values,*images,+metadata,+tags"
+  "*variants.calculated_price,+variants.inventory_quantity,*variants.options,*options,*options.values,*images,+metadata,+tags,+payload_product.*"
 
 type ListProductsArgs = {
   query?: HttpTypes.FindParams & HttpTypes.StoreProductListParams

@@ -152,6 +152,13 @@ The storefront is configured via environment variables in `apps/storefront/.env.
 | `NEXT_PUBLIC_BASE_URL` | Base URL of the storefront | `https://localhost:8000` |
 | `NEXT_PUBLIC_STRIPE_KEY` | Stripe publishable key (optional) | — |
 
+## AI tooling
+
+This repo ships with a checked-in `.mcp.json` that wires up five Model Context
+Protocol servers for Claude Code (live docs, browser automation, both
+Postgres databases, and the Payload CMS plugin). See
+[`docs/MCP.md`](docs/MCP.md) for setup and usage.
+
 ## Resources
 
 - [Medusa Documentation](https://docs.medusajs.com)

@@ -8,12 +8,15 @@ import { cn } from "@/lib/utils"
 import { useCart } from "@/modules/cart/components/cart-provider"
 import { useCartUi } from "@/modules/cart/components/cart-panel"
 import { getVariantPrice, formatPrice } from "@/lib/prices"
+import { PayloadRichText } from "@/components/payload/RichText"
+import type { StoreProductWithPayload } from "@/types/global"
 
 export function ProductDetail({
   product,
 }: {
   product: HttpTypes.StoreProduct
 }) {
+  const payloadProduct = (product as StoreProductWithPayload).payload_product
   const { addItem, adding } = useCart()
   const { open: openCart } = useCartUi()
 
@@ -51,12 +54,17 @@ export function ProductDetail({
 
   const variantPrice = selectedVariant ? getVariantPrice(selectedVariant) : null
 
-  const titleParts = (product.title ?? "").split(" ")
+  const displayTitle = payloadProduct?.title ?? product.title ?? ""
+  const titleParts = displayTitle.split(" ")
   const titleLine1 = titleParts[0] ?? ""
   const titleLine2 = titleParts.slice(1).join(" ") || undefined
 
+  // Galleries always come from Medusa now — Payload no longer owns images.
+  const displayImages: { url: string }[] = images
+  const displayThumbnail = payloadProduct?.thumbnail ?? product.thumbnail ?? null
+
   const activeImageUrl =
-    images[activeImageIdx]?.url ?? product.thumbnail ?? null
+    displayImages[activeImageIdx]?.url ?? displayThumbnail ?? null
 
   async function handleAddToCart() {
     if (!selectedVariant) return
@@ -81,7 +89,7 @@ export function ProductDetail({
           {activeImageUrl ? (
             <Image
               src={activeImageUrl}
-              alt={product.title}
+              alt={displayTitle}
               fill
               priority
               sizes="(max-width: 768px) 100vw, 50vw"
@@ -92,14 +100,14 @@ export function ProductDetail({
           )}
           <span className="corner">{metaRecord?.gallery_corner ?? ""}</span>
           <span className="ph-label">
-            {(product.title ?? "").toUpperCase()}
+            {displayTitle.toUpperCase()}
           </span>
         </div>
-        {images.length > 1 && (
+        {displayImages.length > 1 && (
           <div className="thumbs">
-            {images.map((img, i) => (
+            {displayImages.map((img, i) => (
               <button
-                key={img.id ?? i}
+                key={i}
                 type="button"
                 className={cn("thumb", activeImageIdx === i && "on")}
                 aria-label={`View ${i + 1}`}
@@ -107,7 +115,7 @@ export function ProductDetail({
               >
                 <Image
                   src={img.url}
-                  alt={`${product.title} view ${i + 1}`}
+                  alt={`${displayTitle} view ${i + 1}`}
                   fill
                   sizes="80px"
                   className="object-cover"
@@ -135,7 +143,7 @@ export function ProductDetail({
             </>
           )}
         </h1>
-        <span className="sku">SKU · {selectedVariant?.sku ?? product.id}</span>
+        <span className="sku">SKU · {selectedVariant?.sku ?? product.id ?? ""}</span>
 
         <div className="price-row">
           <span className="price">{variantPrice?.formatted ?? ""}</span>
@@ -145,7 +153,11 @@ export function ProductDetail({
           </span>
         </div>
 
-        {product.description && <p className="lede">{product.description}</p>}
+        <PayloadRichText
+          data={payloadProduct?.description ?? null}
+          fallback={product.description}
+          className="lede"
+        />
 
         {/* Product options */}
         {options.map((opt) => (
