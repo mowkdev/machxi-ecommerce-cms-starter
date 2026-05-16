@@ -1,7 +1,7 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { Badge, Button, Container, Heading, Text, toast } from "@medusajs/ui"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 type ConfigResponse = { serverUrl: string; userCollection: string }
 
@@ -47,9 +47,16 @@ const StatCard = ({ label, value }: { label: string; value: number | string }) =
   </div>
 )
 
+const POLL_INTERVAL_MS = 2500
+const POLL_DURATION_MS = 60_000
+
 const PayloadSettingsPage = () => {
   const queryClient = useQueryClient()
   const [lastEvent, setLastEvent] = useState<string | null>(null)
+  const [polling, setPolling] = useState(false)
+  const pollStartedAt = useRef<number | null>(null)
+  const previousSynced = useRef<number | null>(null)
+  const idleTicks = useRef(0)
 
   const { data: cfg } = useQuery<ConfigResponse>({
     queryKey: ["payload-config"],
@@ -59,7 +66,25 @@ const PayloadSettingsPage = () => {
   const { data: stats, isLoading: statsLoading } = useQuery<StatsResponse>({
     queryKey: ["payload-sync-stats"],
     queryFn: () => fetchJson<StatsResponse>("/admin/payload/sync/stats"),
+    refetchInterval: polling ? POLL_INTERVAL_MS : false,
   })
+
+  // Auto-stop polling: hard timeout after POLL_DURATION_MS, or after 3 ticks
+  // with no change in `synced` (the subscriber has finished its work).
+  useEffect(() => {
+    if (!polling || !stats) return
+    if (pollStartedAt.current && Date.now() - pollStartedAt.current > POLL_DURATION_MS) {
+      setPolling(false)
+      return
+    }
+    if (previousSynced.current === stats.synced) {
+      idleTicks.current += 1
+      if (idleTicks.current >= 3) setPolling(false)
+    } else {
+      idleTicks.current = 0
+      previousSynced.current = stats.synced
+    }
+  }, [polling, stats])
 
   const sync = useMutation({
     mutationFn: async () => {
@@ -73,11 +98,12 @@ const PayloadSettingsPage = () => {
     onSuccess: (data) => {
       setLastEvent(data.event)
       toast.success("Payload sync triggered")
-      // Stats endpoint reflects the new run once the subscriber finishes;
-      // poll-by-refetch on a short delay so the user sees the update.
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["payload-sync-stats"] })
-      }, 1500)
+      pollStartedAt.current = Date.now()
+      previousSynced.current = stats?.synced ?? null
+      idleTicks.current = 0
+      setPolling(true)
+      // Kick off the first refetch immediately rather than waiting one interval.
+      queryClient.invalidateQueries({ queryKey: ["payload-sync-stats"] })
     },
     onError: (err: Error) => toast.error(err.message),
   })
@@ -98,9 +124,16 @@ const PayloadSettingsPage = () => {
       </div>
 
       <div className="mt-8">
-        <Text size="small" leading="compact" weight="plus" className="text-ui-fg-subtle">
-          Sync status
-        </Text>
+        <div className="flex items-center gap-2">
+          <Text size="small" leading="compact" weight="plus" className="text-ui-fg-subtle">
+            Sync status
+          </Text>
+          {polling && (
+            <Badge color="blue" size="2xsmall">
+              Live · updating
+            </Badge>
+          )}
+        </div>
         <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
           <StatCard label="Total products" value={statsLoading ? "…" : stats?.total ?? 0} />
           <StatCard label="Synced" value={statsLoading ? "…" : stats?.synced ?? 0} />

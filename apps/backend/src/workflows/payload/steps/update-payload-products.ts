@@ -2,6 +2,7 @@ import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
 import { PAYLOAD_MODULE, mapMedusaProductToPayload } from "../../../modules/payload"
 import type { PayloadModuleService, PayloadProduct } from "../../../modules/payload"
 import type { SyncResult, SyncResultsInput } from "./record-payload-sync-status"
+import { concurrentMap } from "../../../utils/concurrent-map"
 
 type Product = Parameters<typeof mapMedusaProductToPayload>[0]
 
@@ -9,38 +10,43 @@ type Input = { products: Product[] }
 
 type Snapshot = { payload_id: string; previous: Partial<PayloadProduct> | null }
 
+const PAYLOAD_WRITE_CONCURRENCY = 5
+
 export const updatePayloadProductsStep = createStep(
   "update-payload-products",
   async (input: Input, { container }): Promise<StepResponse<SyncResultsInput, Snapshot[]>> => {
     const service = container.resolve<PayloadModuleService>(PAYLOAD_MODULE)
-    const results: SyncResult[] = []
     const snapshots: Snapshot[] = []
 
-    for (const product of input.products) {
-      try {
-        const found = await service.find<PayloadProduct>("products", {
-          where: { medusa_id: { equals: product.id } },
-          limit: 1,
-          depth: 0,
-        })
-        const existing = found.docs[0]
-        if (!existing) {
-          // No corresponding Payload doc yet — treat as a no-op success so the
-          // caller still gets a metadata write (clearing any prior failure).
-          results.push({ medusa_id: product.id, status: "success" })
-          continue
+    const results: SyncResult[] = await concurrentMap(
+      input.products,
+      PAYLOAD_WRITE_CONCURRENCY,
+      async (product): Promise<SyncResult> => {
+        try {
+          const found = await service.find<PayloadProduct>("products", {
+            where: { medusa_id: { equals: product.id } },
+            limit: 1,
+            depth: 0,
+          })
+          const existing = found.docs[0]
+          if (!existing) {
+            // No corresponding Payload doc yet — treat as a no-op success so
+            // the caller still gets a metadata write (clearing any prior
+            // failure).
+            return { medusa_id: product.id, status: "success" }
+          }
+          snapshots.push({ payload_id: existing.id, previous: existing })
+          await service.update("products", existing.id, mapMedusaProductToPayload(product))
+          return { medusa_id: product.id, status: "success" }
+        } catch (err) {
+          return {
+            medusa_id: product.id,
+            status: "failed",
+            error: (err as Error).message,
+          }
         }
-        snapshots.push({ payload_id: existing.id, previous: existing })
-        await service.update("products", existing.id, mapMedusaProductToPayload(product))
-        results.push({ medusa_id: product.id, status: "success" })
-      } catch (err) {
-        results.push({
-          medusa_id: product.id,
-          status: "failed",
-          error: (err as Error).message,
-        })
       }
-    }
+    )
 
     return new StepResponse({ results }, snapshots)
   },
