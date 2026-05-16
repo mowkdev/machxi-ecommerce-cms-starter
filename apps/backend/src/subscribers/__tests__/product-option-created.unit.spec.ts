@@ -22,6 +22,12 @@ describe("product-option-created", () => {
     }
     mock.createPayloadProductOptionWorkflow.run.mockResolvedValueOnce({ result: null })
     await handler({ event: { data: { id: "opt_1" } }, container })
-    expect(mock.createPayloadProductOptionWorkflow.run).toHaveBeenCalled()
+    expect(mock.createPayloadProductOptionWorkflow.run).toHaveBeenCalledWith({
+      container,
+      input: {
+        product_id: "prod_1",
+        option: { id: "opt_1", title: "Size", product_id: "prod_1", values: [{ value: "S" }] },
+      },
+    })
   })
 })

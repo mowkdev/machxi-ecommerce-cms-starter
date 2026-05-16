@@ -22,6 +22,12 @@ describe("product-variant-updated", () => {
     }
     mock.updatePayloadProductVariantsWorkflow.run.mockResolvedValueOnce({ result: null })
     await handler({ event: { data: { id: "var_1" } }, container })
-    expect(mock.updatePayloadProductVariantsWorkflow.run).toHaveBeenCalled()
+    expect(mock.updatePayloadProductVariantsWorkflow.run).toHaveBeenCalledWith({
+      container,
+      input: {
+        product_id: "prod_1",
+        variants: [{ id: "var_1", title: "S", sku: "X-S", product_id: "prod_1", options: [] }],
+      },
+    })
   })
 })
