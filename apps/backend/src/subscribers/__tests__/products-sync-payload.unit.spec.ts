@@ -16,9 +16,7 @@ describe("products-sync-payload subscriber", () => {
         { id: "p2", title: "B" },
       ],
     })
-    const findUnsynced = jest.fn().mockResolvedValueOnce({
-      payload_product: [{ medusa_id: "p1" }],
-    })
+    const findUnsynced = jest.fn().mockResolvedValueOnce([{ medusa_id: "p1", product_id: "p1" }])
     const container = {
       resolve: (k: string) => {
         if (k === "query") return { graph: query }

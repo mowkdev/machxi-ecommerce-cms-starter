@@ -108,12 +108,14 @@ describe("PayloadModuleService", () => {
   })
 
   describe("list (used by virtual link)", () => {
-    it("shapes the response as { payload_product: [...] }", async () => {
+    it("returns a flat array of docs with product_id alias for link join", async () => {
       const doc = { id: "1", medusa_id: "p1", createdAt: "", updatedAt: "" }
       const { fetch } = makeFetch([{ body: { docs: [doc], totalDocs: 1 } }])
       const service = new PayloadModuleService({}, OPTIONS, { fetch })
       const result = await service.list({ product_id: "p1" })
-      expect(result).toEqual({ payload_product: [doc] })
+      // Flat array (not wrapped in { payload_product }); product_id is the
+      // join field RemoteJoiner uses to match docs to parent products.
+      expect(result).toEqual([{ ...doc, product_id: "p1" }])
     })
 
     it("accepts an array of product_ids", async () => {
@@ -126,7 +128,8 @@ describe("PayloadModuleService", () => {
       const result = await service.list({ product_id: ["p1", "p2"] })
       const url = new URL(calls[0].url)
       expect(url.searchParams.getAll("where[medusa_id][in][]")).toEqual(["p1", "p2"])
-      expect(result.payload_product).toHaveLength(2)
+      expect(result).toHaveLength(2)
+      expect(result[0]).toMatchObject({ medusa_id: "p1", product_id: "p1" })
     })
   })
 

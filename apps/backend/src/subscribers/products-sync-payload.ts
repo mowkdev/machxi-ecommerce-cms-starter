@@ -18,7 +18,7 @@ export default async function handleProductsSync({ event, container }: Subscribe
     const service = container.resolve<PayloadModuleService>(PAYLOAD_MODULE)
     const ids = products.map((p: { id: string }) => p.id)
     const existing = await service.list({ product_id: ids })
-    const existingIds = new Set(existing.payload_product.map((p) => p.medusa_id))
+    const existingIds = new Set(existing.map((p) => p.medusa_id))
     const unsynced = products.filter((p: { id: string }) => !existingIds.has(p.id))
     for (let i = 0; i < unsynced.length; i += BATCH_SIZE) {
       const batch = unsynced.slice(i, i + BATCH_SIZE)

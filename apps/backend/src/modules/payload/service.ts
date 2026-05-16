@@ -117,18 +117,23 @@ class PayloadModuleService {
   }
 
   /**
-   * Required by the Medusa→Payload virtual link runtime.
-   * Given one or more Medusa product IDs, returns the matching Payload products
-   * shaped under `payload_product` so the link layer can merge them in.
+   * Called by Medusa's RemoteQuery whenever a query references the virtual
+   * `payload_product` link. Must return a FLAT ARRAY of docs (not wrapped in
+   * the alias) — RemoteJoiner reads each doc's `product_id` field to match
+   * docs back to their parent Medusa products. Each doc therefore carries
+   * `product_id` (aliased from Payload's `medusa_id`).
    */
-  async list(filters: { product_id: string | string[] }): Promise<{ payload_product: PayloadProduct[] }> {
+  async list(
+    filters: { product_id: string | string[] }
+  ): Promise<Array<PayloadProduct & { product_id: string }>> {
     const ids = Array.isArray(filters.product_id) ? filters.product_id : [filters.product_id]
+    if (!ids.length) return []
     const result = await this.find<PayloadProduct>("products", {
       where: { medusa_id: { in: ids } },
       limit: ids.length,
       depth: 2,
     })
-    return { payload_product: result.docs }
+    return result.docs.map((doc) => ({ ...doc, product_id: doc.medusa_id }))
   }
 }
 
