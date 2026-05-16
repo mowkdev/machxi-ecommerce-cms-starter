@@ -10,20 +10,23 @@ export const createPayloadProductsStep = createStep(
   "create-payload-products",
   async (input: Input, { container }) => {
     const service = container.resolve<PayloadModuleService>(PAYLOAD_MODULE)
-    const created: Array<{ payload_id: string; medusa_id: string }> = []
+    const result: Array<{ payload_id: string; medusa_id: string }> = []
+    const createdInThisStep: Array<{ payload_id: string; medusa_id: string }> = []
     for (const product of input.products) {
       const existing = await service.find("products", {
         where: { medusa_id: { equals: product.id } },
         limit: 1,
       })
       if (existing.docs[0]) {
-        created.push({ payload_id: existing.docs[0].id, medusa_id: product.id })
+        result.push({ payload_id: existing.docs[0].id, medusa_id: product.id })
         continue
       }
-      const result = await service.create("products", mapMedusaProductToPayload(product))
-      created.push({ payload_id: result.doc.id, medusa_id: product.id })
+      const created = await service.create("products", mapMedusaProductToPayload(product))
+      const record = { payload_id: created.doc.id, medusa_id: product.id }
+      result.push(record)
+      createdInThisStep.push(record)
     }
-    return new StepResponse(created, created)
+    return new StepResponse(result, createdInThisStep)
   },
   async (created, { container }) => {
     if (!created?.length) return

@@ -1,11 +1,11 @@
 import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
 import { PAYLOAD_MODULE, mapMedusaVariantToPayload } from "../../../modules/payload"
-import type { PayloadModuleService, PayloadProduct } from "../../../modules/payload"
+import type { PayloadModuleService, PayloadProduct, PayloadProductVariant } from "../../../modules/payload"
 
 type Variant = Parameters<typeof mapMedusaVariantToPayload>[0]
 type Input = { product_id: string; variants: Variant[] }
 
-type Snapshot = { payload_id: string; previous: PayloadProduct["variants"] }
+type Snapshot = { payload_id: string; previous: PayloadProductVariant[] }
 
 export const upsertPayloadProductVariantsStep = createStep(
   "upsert-payload-product-variants",
