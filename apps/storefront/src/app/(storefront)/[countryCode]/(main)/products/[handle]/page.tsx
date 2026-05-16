@@ -6,6 +6,7 @@ import { HttpTypes } from "@medusajs/types"
 import { ProductDetail } from "@/modules/products/components/product-detail"
 import { getProductByHandle, listProducts } from "@/lib/data/products"
 import { getCheapestProductPrice } from "@/lib/prices"
+import type { StoreProductWithPayload } from "@/types/global"
 
 async function getRelatedProducts(
   currentId: string,
@@ -44,6 +45,15 @@ export default async function ProductPage({
   const specs: { k: string; v: string; small: string }[] =
     metaRecord?.specs ?? []
 
+  const payloadProduct = (product as StoreProductWithPayload).payload_product
+  const seoTitle = payloadProduct?.seo?.title ?? product.title
+  const seoDescription = payloadProduct?.seo?.description ?? product.description
+  const payloadImages = payloadProduct?.images?.map((i) => i.image.url).filter(Boolean) as string[] | undefined
+  const displayImages = payloadImages && payloadImages.length > 0
+    ? payloadImages
+    : (product.images ?? []).map((i) => i.url).filter(Boolean) as string[]
+  const displayThumbnail = payloadProduct?.thumbnail?.url ?? product.thumbnail ?? null
+
   const price = getCheapestProductPrice(product)
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
@@ -51,9 +61,9 @@ export default async function ProductPage({
   const productLd = {
     "@context": "https://schema.org/",
     "@type": "Product",
-    name: product.title,
-    description: product.description ?? product.subtitle ?? undefined,
-    image: (product.images ?? []).map((i) => i.url).filter(Boolean),
+    name: seoTitle,
+    description: seoDescription ?? product.subtitle ?? undefined,
+    image: displayImages,
     sku: product.variants?.[0]?.sku ?? product.id,
     brand: { "@type": "Brand", name: "Dabasberns" },
     offers: price
@@ -77,13 +87,13 @@ export default async function ProductPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productLd) }}
       />
-      <main className="shop" data-screen-label={`Product — ${product.title}`}>
+      <main className="shop" data-screen-label={`Product — ${seoTitle}`}>
         <div className="crumb">
           <LocalizedLink href="/">Dabasberns</LocalizedLink>
           <span className="sep">/</span>
           <LocalizedLink href="/products">Products</LocalizedLink>
           <span className="sep">/</span>
-          <span className="now">{product.title}</span>
+          <span className="now">{seoTitle}</span>
         </div>
 
         <div className="pdp">
@@ -118,6 +128,9 @@ export default async function ProductPage({
               <h3>Pairs nicely with</h3>
               <div className="row">
                 {related.map((p) => {
+                  const rPayload = (p as StoreProductWithPayload).payload_product
+                  const rTitle = rPayload?.title ?? p.title ?? ""
+                  const rThumbnail = rPayload?.thumbnail?.url ?? p.thumbnail ?? null
                   const price = getCheapestProductPrice(p)
                   return (
                     <LocalizedLink
@@ -126,10 +139,10 @@ export default async function ProductPage({
                       href={`/products/${p.handle}`}
                     >
                       <div className="frame">
-                        {p.thumbnail ? (
+                        {rThumbnail ? (
                           <Image
-                            src={p.thumbnail}
-                            alt={p.title}
+                            src={rThumbnail}
+                            alt={rTitle}
                             fill
                             sizes="(max-width: 640px) 50vw, 25vw"
                             className="object-cover"
@@ -138,11 +151,11 @@ export default async function ProductPage({
                           <div className="ph" />
                         )}
                         <span className="ph-label">
-                          {(p.subtitle ?? p.title ?? "").toUpperCase()}
+                          {(p.subtitle ?? rTitle).toUpperCase()}
                         </span>
                       </div>
                       <div className="meta">
-                        <span className="name">{p.title}</span>
+                        <span className="name">{rTitle}</span>
                         <span className="price">{price?.formatted ?? ""}</span>
                       </div>
                       <span className="cat">

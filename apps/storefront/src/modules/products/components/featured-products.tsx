@@ -9,6 +9,7 @@ import { HttpTypes } from "@medusajs/types"
 import { Button } from "@/modules/common/ui/button"
 import { cn } from "@/lib/utils"
 import { getCheapestProductPrice } from "@/lib/prices"
+import type { StoreProductWithPayload } from "@/types/global"
 
 export function FeaturedProducts({
   products,
@@ -105,6 +106,9 @@ export function FeaturedProducts({
           }}
         >
           {products.map((p) => {
+            const payloadProduct = (p as StoreProductWithPayload).payload_product
+            const displayTitle = payloadProduct?.title ?? p.title ?? ""
+            const displayThumbnail = payloadProduct?.thumbnail?.url ?? p.thumbnail ?? null
             const price = getCheapestProductPrice(p)
             const tag = (p.metadata as Record<string, string> | null)?.tag
             const tagVariant = (p.metadata as Record<string, string> | null)
@@ -120,10 +124,10 @@ export function FeaturedProducts({
                   className="relative aspect-[3/4] rounded-md overflow-hidden flex items-center justify-center transition-transform duration-300 ease-out group-hover:-translate-y-1"
                   style={{ background: "var(--paper-2)" }}
                 >
-                  {p.thumbnail ? (
+                  {displayThumbnail ? (
                     <Image
-                      src={p.thumbnail}
-                      alt={p.title}
+                      src={displayThumbnail}
+                      alt={displayTitle}
                       fill
                       sizes="(max-width: 640px) 78vw, (max-width: 1024px) 50vw, 25vw"
                       className="object-cover"
@@ -151,17 +155,17 @@ export function FeaturedProducts({
                   <span
                     className="absolute bottom-3.5 left-3.5 text-[11px] tracking-[0.08em] uppercase font-mono z-10"
                     style={{
-                      color: p.thumbnail
+                      color: displayThumbnail
                         ? "rgba(255,255,255,0.8)"
                         : "color-mix(in srgb, var(--ink) 55%, transparent)",
                     }}
                   >
-                    {(p.subtitle ?? p.title ?? "").toUpperCase()}
+                    {(p.subtitle ?? displayTitle).toUpperCase()}
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline gap-3">
                   <span className="font-display font-normal text-[18px] tracking-[0.04em] uppercase">
-                    {p.title}
+                    {displayTitle}
                   </span>
                   <span className="text-[15px] font-medium tabular-nums">
                     {price?.formatted ?? ""}

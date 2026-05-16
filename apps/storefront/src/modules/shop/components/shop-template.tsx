@@ -14,6 +14,7 @@ import {
   orderForSort,
   parseSort,
 } from "@/lib/shop-sort"
+import type { StoreProductWithPayload } from "@/types/global"
 
 // Cap on rows we'll fetch when client-side-sorting by price.
 // Medusa can't ORDER BY `variants.calculated_price` (it's a derived field),
@@ -169,6 +170,9 @@ export async function ShopTemplate({
 
           <div className="pgrid">
             {products.map((p) => {
+              const pPayload = (p as StoreProductWithPayload).payload_product
+              const pTitle = pPayload?.title ?? p.title ?? ""
+              const pThumbnail = pPayload?.thumbnail?.url ?? p.thumbnail ?? null
               const price = getCheapestProductPrice(p)
               return (
                 <LocalizedLink
@@ -177,10 +181,10 @@ export async function ShopTemplate({
                   href={`/products/${p.handle}`}
                 >
                   <div className="frame">
-                    {p.thumbnail ? (
+                    {pThumbnail ? (
                       <Image
-                        src={p.thumbnail}
-                        alt={p.title}
+                        src={pThumbnail}
+                        alt={pTitle}
                         fill
                         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         className="ph object-cover"
@@ -189,11 +193,11 @@ export async function ShopTemplate({
                       <div className="ph" />
                     )}
                     <span className="ph-label">
-                      {(p.subtitle ?? p.title ?? "").toUpperCase()}
+                      {(p.subtitle ?? pTitle).toUpperCase()}
                     </span>
                   </div>
                   <div className="meta">
-                    <span className="name">{p.title}</span>
+                    <span className="name">{pTitle}</span>
                     <span className="price">{price?.formatted ?? ""}</span>
                   </div>
                   <span className="cat">
