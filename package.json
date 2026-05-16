@@ -18,7 +18,8 @@
   "pnpm": {
     "overrides": {
       "@types/react": "19.0.5",
-      "@types/react-dom": "19.0.5"
+      "@types/react-dom": "19.0.5",
+      "undici": "5.20.0"
     }
   },
   "devDependencies": {
