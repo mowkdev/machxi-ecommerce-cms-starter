@@ -14,6 +14,8 @@ type MedusaProduct = {
   handle?: string
   subtitle?: string | null
   description?: string | null
+  thumbnail?: string | null
+  images?: Array<{ url: string }>
   options?: MedusaOption[]
   variants?: MedusaVariant[]
 }
@@ -24,6 +26,11 @@ export function mapMedusaProductToPayload(product: MedusaProduct): PayloadUpsert
   if (product.handle !== undefined) data.handle = product.handle
   if (product.subtitle !== undefined && product.subtitle !== null) data.subtitle = product.subtitle
   if (product.description !== undefined && product.description !== null) data.description = product.description
+  // NOTE: Medusa `thumbnail` (string URL) and `images` (Array<{ url }>) are NOT
+  // mapped to Payload yet. Payload's Media collection requires uploaded media
+  // documents (or pasteURL-ingested copies). A future task will ingest these
+  // into Payload Media and link them here. Storefront falls back to Medusa
+  // images when payload_product.thumbnail/images are absent.
   if (product.options) data.options = product.options.map(mapOption)
   if (product.variants) data.variants = product.variants.map(mapMedusaVariantToPayload)
   return data

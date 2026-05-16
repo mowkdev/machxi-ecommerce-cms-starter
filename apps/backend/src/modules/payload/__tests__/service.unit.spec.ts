@@ -136,13 +136,11 @@ describe("PayloadModuleService", () => {
         { status: 422, body: { errors: [{ message: "validation failed", field: "medusa_id" }] } },
       ])
       const service = new PayloadModuleService({}, OPTIONS, { fetch })
-      await expect(service.create("products", { medusa_id: "" })).rejects.toBeInstanceOf(PayloadApiError)
-      try {
-        await service.create("products", { medusa_id: "" })
-      } catch (err) {
-        expect((err as PayloadApiError).status).toBe(422)
-        expect((err as PayloadApiError).body?.errors?.[0].message).toBe("validation failed")
-      }
+      await expect(service.create("products", { medusa_id: "" })).rejects.toMatchObject({
+        name: "PayloadApiError",
+        status: 422,
+        body: { errors: [{ message: "validation failed", field: "medusa_id" }] },
+      })
     })
 
     it("wraps fetch network errors as PayloadApiError with status 0", async () => {
