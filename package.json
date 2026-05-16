@@ -20,10 +20,13 @@
       "@types/react": "19.0.5",
       "@types/react-dom": "19.0.5",
       "undici": "5.20.0"
+    },
+    "patchedDependencies": {
+      "payload@3.84.1": "patches/payload@3.84.1.patch"
     }
   },
   "devDependencies": {
-    "turbo": "^2.0.14",
-    "prettier": "^3.2.5"
+    "prettier": "^3.2.5",
+    "turbo": "^2.0.14"
   }
 }

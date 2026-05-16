@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 8000",
-    "build": "next build",
+    "build": "payload generate:importmap && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate:importmap": "payload generate:importmap"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
