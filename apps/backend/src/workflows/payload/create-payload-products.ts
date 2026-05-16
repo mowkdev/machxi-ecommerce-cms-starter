@@ -1,0 +1,13 @@
+import { createWorkflow, WorkflowResponse } from "@medusajs/framework/workflows-sdk"
+import { createPayloadProductsStep } from "./steps/create-payload-products"
+import { mapMedusaProductToPayload } from "../../modules/payload"
+
+type Product = Parameters<typeof mapMedusaProductToPayload>[0]
+
+export const createPayloadProductsWorkflow = createWorkflow(
+  "create-payload-products",
+  (input: { products: Product[] }) => {
+    const created = createPayloadProductsStep(input)
+    return new WorkflowResponse(created)
+  }
+)
