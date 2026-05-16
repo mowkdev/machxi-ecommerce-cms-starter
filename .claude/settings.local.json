@@ -23,7 +23,16 @@
       "WebFetch(domain:payloadcms.com)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Skill(superpowers:subagent-driven-development)"
+      "Skill(superpowers:subagent-driven-development)",
+      "Skill(claude-code-setup:claude-automation-recommender)",
+      "WebSearch",
+      "Bash(curl -fsSL \"https://raw.githubusercontent.com/payloadcms/payload/main/docs/plugins/mcp.mdx\")",
+      "Bash(npm view *)",
+      "Bash(wait)",
+      "Bash(npx -y @henkey/postgres-mcp-server --help)",
+      "Bash(pnpm install *)",
+      "Bash(npx -y mcp-remote --help)",
+      "Bash(curl -i -s -X POST 'http://localhost:8000/api/mcp' -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"probe\",\"version\":\"0.0.1\"}}}')"
     ]
   }
 }

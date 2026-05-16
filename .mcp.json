@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"]
+    },
+    "postgres-medusa": {
+      "command": "node",
+      "args": ["scripts/mcp/postgres.mjs", "apps/backend/.env", "DATABASE_URL"]
+    },
+    "postgres-payload": {
+      "command": "node",
+      "args": ["scripts/mcp/postgres.mjs", "apps/storefront/.env.local", "PAYLOAD_DATABASE_URL"]
+    },
+    "payload": {
+      "command": "node",
+      "args": ["scripts/mcp/payload.mjs"]
+    }
+  }
+}

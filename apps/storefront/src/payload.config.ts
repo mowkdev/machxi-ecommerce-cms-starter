@@ -3,6 +3,7 @@ import { fileURLToPath } from "url"
 import sharp from "sharp"
 import { lexicalEditor } from "@payloadcms/richtext-lexical"
 import { postgresAdapter } from "@payloadcms/db-postgres"
+import { mcpPlugin } from "@payloadcms/plugin-mcp"
 import { buildConfig } from "payload"
 import { Users } from "./collections/Users"
 import { Media } from "./collections/Media"
@@ -34,5 +35,19 @@ export default buildConfig({
       connectionString: payloadDatabaseUrl,
     },
   }),
+  plugins: [
+    mcpPlugin({
+      collections: {
+        products: {
+          description: "Payload-side product enrichment mirrored from Medusa.",
+          enabled: { find: true, update: true, create: false, delete: false },
+        },
+        media: {
+          description: "Storefront media library (images, alt text).",
+          enabled: { find: true },
+        },
+      },
+    }),
+  ],
   sharp,
 })
