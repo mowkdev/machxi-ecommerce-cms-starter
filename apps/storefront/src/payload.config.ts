@@ -4,6 +4,9 @@ import sharp from "sharp"
 import { lexicalEditor } from "@payloadcms/richtext-lexical"
 import { postgresAdapter } from "@payloadcms/db-postgres"
 import { buildConfig } from "payload"
+import { Users } from "./collections/Users"
+import { Media } from "./collections/Media"
+import { Products } from "./collections/Products"
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -19,7 +22,8 @@ if (!payloadDatabaseUrl) {
 }
 
 export default buildConfig({
-  collections: [],
+  admin: { user: Users.slug },
+  collections: [Users, Media, Products],
   editor: lexicalEditor(),
   secret: payloadSecret,
   typescript: {
