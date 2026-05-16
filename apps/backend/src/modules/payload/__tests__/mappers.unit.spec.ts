@@ -19,6 +19,30 @@ describe("mapMedusaProductToPayload", () => {
     expect(result.subtitle).toBe("Wide brim")
   })
 
+  it("mirrors Medusa thumbnail URL", () => {
+    const result = mapMedusaProductToPayload({
+      id: "prod_1",
+      thumbnail: "https://cdn.example.com/hat.jpg",
+    } as never)
+    expect(result.thumbnail).toBe("https://cdn.example.com/hat.jpg")
+  })
+
+  it("clears thumbnail when Medusa has none", () => {
+    const result = mapMedusaProductToPayload({
+      id: "prod_1",
+      thumbnail: null,
+    } as never)
+    expect(result.thumbnail).toBeNull()
+  })
+
+  it("does not include an images key in the payload", () => {
+    const result = mapMedusaProductToPayload({
+      id: "prod_1",
+      images: [{ url: "https://cdn.example.com/a.jpg" }],
+    } as never)
+    expect("images" in result).toBe(false)
+  })
+
   it("passes plain description through as a string (Lexical hook wraps it on write)", () => {
     const result = mapMedusaProductToPayload({
       id: "prod_1",

@@ -25,10 +25,14 @@ const ensureLexicalDescription: FieldHook = ({ value }) => {
   }
 }
 
-const lockCount: Validate = (value, { siblingData, previousValue }) => {
+// Defense in depth: even if the admin UI readOnly is bypassed (custom field
+// component bug, direct REST call without admin), refuse a write that changes
+// the array length. Combined with `admin.readOnly: true` on the array fields,
+// admins cannot add or remove options/variants from Payload.
+const lockCount: Validate = (value, { previousValue }) => {
   if (!Array.isArray(value) || !Array.isArray(previousValue)) return true
   if (value.length !== previousValue.length) {
-    return "Count must match Medusa; changes are read-only from the admin UI."
+    return "Count is managed by Medusa and cannot be changed from Payload."
   }
   return true
 }
@@ -59,11 +63,15 @@ export const Products: CollectionConfig = {
       type: "richText",
       hooks: { beforeChange: [ensureLexicalDescription] },
     },
-    { name: "thumbnail", type: "upload", relationTo: "media" },
     {
-      name: "images",
-      type: "array",
-      fields: [{ name: "image", type: "upload", relationTo: "media", required: true }],
+      // Read-only mirror of the Medusa thumbnail URL. Not a Payload upload —
+      // the canonical asset lives in Medusa's file store.
+      name: "thumbnail",
+      type: "text",
+      admin: {
+        readOnly: true,
+        description: "Mirror of Medusa's thumbnail URL. Manage in Medusa.",
+      },
     },
     {
       name: "seo",
@@ -77,29 +85,43 @@ export const Products: CollectionConfig = {
     {
       name: "options",
       type: "array",
-      admin: { description: "Mirror of Medusa options. Count is managed by Medusa." },
+      admin: {
+        readOnly: true,
+        description: "Mirror of Medusa options. Managed by Medusa.",
+      },
       validate: lockCount,
       fields: [
         { name: "medusa_id", type: "text", required: true, admin: { readOnly: true } },
-        { name: "title", type: "text" },
-        { name: "values", type: "array", fields: [{ name: "value", type: "text" }] },
+        { name: "title", type: "text", admin: { readOnly: true } },
+        {
+          name: "values",
+          type: "array",
+          admin: { readOnly: true },
+          validate: lockCount,
+          fields: [{ name: "value", type: "text", admin: { readOnly: true } }],
+        },
       ],
     },
     {
       name: "variants",
       type: "array",
-      admin: { description: "Mirror of Medusa variants. Count is managed by Medusa." },
+      admin: {
+        readOnly: true,
+        description: "Mirror of Medusa variants. Managed by Medusa.",
+      },
       validate: lockCount,
       fields: [
         { name: "medusa_id", type: "text", required: true, admin: { readOnly: true } },
-        { name: "title", type: "text" },
+        { name: "title", type: "text", admin: { readOnly: true } },
         { name: "sku", type: "text", admin: { readOnly: true } },
         {
           name: "option_values",
           type: "array",
+          admin: { readOnly: true },
+          validate: lockCount,
           fields: [
-            { name: "option_medusa_id", type: "text" },
-            { name: "value", type: "text" },
+            { name: "option_medusa_id", type: "text", admin: { readOnly: true } },
+            { name: "value", type: "text", admin: { readOnly: true } },
           ],
         },
       ],

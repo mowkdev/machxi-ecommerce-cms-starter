@@ -48,11 +48,9 @@ export default async function ProductPage({
   const payloadProduct = (product as StoreProductWithPayload).payload_product
   const seoTitle = payloadProduct?.seo?.title ?? product.title
   const seoDescription = payloadProduct?.seo?.description ?? product.description
-  const payloadImages = payloadProduct?.images?.map((i) => i.image.url).filter(Boolean) as string[] | undefined
-  const displayImages = payloadImages && payloadImages.length > 0
-    ? payloadImages
-    : (product.images ?? []).map((i) => i.url).filter(Boolean) as string[]
-  const displayThumbnail = payloadProduct?.thumbnail?.url ?? product.thumbnail ?? null
+  // Galleries always come from Medusa now — Payload no longer owns images.
+  const displayImages = (product.images ?? []).map((i) => i.url).filter(Boolean) as string[]
+  const displayThumbnail = payloadProduct?.thumbnail ?? product.thumbnail ?? null
 
   const price = getCheapestProductPrice(product)
   const siteUrl =
@@ -130,7 +128,7 @@ export default async function ProductPage({
                 {related.map((p) => {
                   const rPayload = (p as StoreProductWithPayload).payload_product
                   const rTitle = rPayload?.title ?? p.title ?? ""
-                  const rThumbnail = rPayload?.thumbnail?.url ?? p.thumbnail ?? null
+                  const rThumbnail = rPayload?.thumbnail ?? p.thumbnail ?? null
                   const price = getCheapestProductPrice(p)
                   return (
                     <LocalizedLink

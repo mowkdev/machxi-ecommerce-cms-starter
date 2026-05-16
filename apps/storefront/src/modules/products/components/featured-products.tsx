@@ -108,7 +108,7 @@ export function FeaturedProducts({
           {products.map((p) => {
             const payloadProduct = (p as StoreProductWithPayload).payload_product
             const displayTitle = payloadProduct?.title ?? p.title ?? ""
-            const displayThumbnail = payloadProduct?.thumbnail?.url ?? p.thumbnail ?? null
+            const displayThumbnail = payloadProduct?.thumbnail ?? p.thumbnail ?? null
             const price = getCheapestProductPrice(p)
             const tag = (p.metadata as Record<string, string> | null)?.tag
             const tagVariant = (p.metadata as Record<string, string> | null)

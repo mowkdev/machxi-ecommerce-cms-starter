@@ -1,14 +1,5 @@
 import type { SerializedEditorState } from "lexical"
 
-export type PayloadMedia = {
-  id: string
-  url?: string | null
-  alt?: string | null
-  width?: number | null
-  height?: number | null
-  sizes?: Record<string, { url?: string | null; width?: number | null; height?: number | null }>
-}
-
 export type PayloadProductOption = {
   medusa_id: string
   title?: string
@@ -29,8 +20,8 @@ export type PayloadProductFromLink = {
   handle?: string
   subtitle?: string
   description?: SerializedEditorState | null
-  thumbnail?: PayloadMedia | null
-  images?: { image: PayloadMedia }[]
+  /** Read-only mirror of Medusa's thumbnail URL — Payload no longer owns this asset. */
+  thumbnail?: string | null
   seo?: { title?: string; description?: string; keywords?: string }
   options?: PayloadProductOption[]
   variants?: PayloadProductVariant[]

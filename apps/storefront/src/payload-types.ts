@@ -238,20 +238,17 @@ export interface Product {
     };
     [k: string]: unknown;
   } | null;
-  thumbnail?: (number | null) | Media;
-  images?:
-    | {
-        image: number | Media;
-        id?: string | null;
-      }[]
-    | null;
+  /**
+   * Mirror of Medusa's thumbnail URL. Manage in Medusa.
+   */
+  thumbnail?: string | null;
   seo?: {
     title?: string | null;
     description?: string | null;
     keywords?: string | null;
   };
   /**
-   * Mirror of Medusa options. Count is managed by Medusa.
+   * Mirror of Medusa options. Managed by Medusa.
    */
   options?:
     | {
@@ -267,7 +264,7 @@ export interface Product {
       }[]
     | null;
   /**
-   * Mirror of Medusa variants. Count is managed by Medusa.
+   * Mirror of Medusa variants. Managed by Medusa.
    */
   variants?:
     | {
@@ -510,12 +507,6 @@ export interface ProductsSelect<T extends boolean = true> {
   subtitle?: T;
   description?: T;
   thumbnail?: T;
-  images?:
-    | T
-    | {
-        image?: T;
-        id?: T;
-      };
   seo?:
     | T
     | {

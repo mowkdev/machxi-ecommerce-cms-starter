@@ -61,8 +61,8 @@ export interface PayloadProduct extends PayloadCollectionItem {
   handle?: string
   subtitle?: string
   description?: unknown
-  thumbnail?: { id: string; url?: string } | string
-  images?: Array<{ image: { id: string; url?: string } | string }>
+  /** Mirror of Medusa's thumbnail URL — Payload does not own this asset. */
+  thumbnail?: string | null
   seo?: { title?: string; description?: string; keywords?: string }
   options?: PayloadProductOption[]
   variants?: PayloadProductVariant[]

@@ -172,7 +172,7 @@ export async function ShopTemplate({
             {products.map((p) => {
               const pPayload = (p as StoreProductWithPayload).payload_product
               const pTitle = pPayload?.title ?? p.title ?? ""
-              const pThumbnail = pPayload?.thumbnail?.url ?? p.thumbnail ?? null
+              const pThumbnail = pPayload?.thumbnail ?? p.thumbnail ?? null
               const price = getCheapestProductPrice(p)
               return (
                 <LocalizedLink

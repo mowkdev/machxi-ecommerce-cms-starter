@@ -59,12 +59,9 @@ export function ProductDetail({
   const titleLine1 = titleParts[0] ?? ""
   const titleLine2 = titleParts.slice(1).join(" ") || undefined
 
-  const payloadImages = payloadProduct?.images?.map((i) => i.image.url).filter(Boolean) as string[] | undefined
-  const displayImages: { url: string }[] =
-    payloadImages && payloadImages.length > 0
-      ? payloadImages.map((url) => ({ url }))
-      : images
-  const displayThumbnail = payloadProduct?.thumbnail?.url ?? product.thumbnail ?? null
+  // Galleries always come from Medusa now — Payload no longer owns images.
+  const displayImages: { url: string }[] = images
+  const displayThumbnail = payloadProduct?.thumbnail ?? product.thumbnail ?? null
 
   const activeImageUrl =
     displayImages[activeImageIdx]?.url ?? displayThumbnail ?? null

@@ -12,7 +12,7 @@ export default async function handleProductsSync({ event, container }: Subscribe
     const query = container.resolve(ContainerRegistrationKeys.QUERY)
     const { data: products } = await query.graph({
       entity: "product",
-      fields: ["id", "title", "handle", "subtitle", "description", "options.*", "variants.*", "variants.options.*"],
+      fields: ["id", "title", "handle", "subtitle", "description", "thumbnail", "options.*", "variants.*", "variants.options.*"],
     })
     if (!products?.length) return
     const service = container.resolve<PayloadModuleService>(PAYLOAD_MODULE)

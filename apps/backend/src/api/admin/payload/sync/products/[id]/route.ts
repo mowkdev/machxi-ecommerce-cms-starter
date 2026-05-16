@@ -10,6 +10,7 @@ const PRODUCT_FIELDS = [
   "handle",
   "subtitle",
   "description",
+  "thumbnail",
   "options.*",
   "variants.*",
   "variants.options.*",

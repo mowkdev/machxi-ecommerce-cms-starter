@@ -34,6 +34,10 @@ export default buildConfig({
     pool: {
       connectionString: payloadDatabaseUrl,
     },
+    // Dev only: auto-apply collection schema changes (drop/rename columns,
+    // remove array sub-tables, etc.). Production should use generated
+    // migrations via `payload migrate:create` + `payload migrate`.
+    push: process.env.NODE_ENV !== "production",
   }),
   plugins: [
     mcpPlugin({

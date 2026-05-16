@@ -13,7 +13,7 @@ export default async function handleProductCreated({
     const query = container.resolve(ContainerRegistrationKeys.QUERY)
     const { data: products } = await query.graph({
       entity: "product",
-      fields: ["id", "title", "handle", "subtitle", "description", "options.*", "variants.*", "variants.options.*"],
+      fields: ["id", "title", "handle", "subtitle", "description", "thumbnail", "options.*", "variants.*", "variants.options.*"],
       filters: { id: event.data.id },
     })
     if (!products?.length) return
