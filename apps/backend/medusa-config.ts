@@ -2,6 +2,8 @@ import { loadEnv, defineConfig } from "@medusajs/framework/utils"
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
 
+const s3Bucket = process.env.S3_BUCKET
+
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
@@ -22,5 +24,34 @@ module.exports = defineConfig({
         userCollection: process.env.PAYLOAD_USER_COLLECTION || "users",
       },
     },
+    ...(s3Bucket
+      ? [
+          {
+            resolve: "@medusajs/medusa/file",
+            options: {
+              providers: [
+                {
+                  resolve: "@medusajs/medusa/file-s3",
+                  id: "s3",
+                  options: {
+                    file_url: process.env.S3_FILE_URL,
+                    access_key_id: process.env.S3_ACCESS_KEY_ID,
+                    secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
+                    region: process.env.S3_REGION,
+                    bucket: s3Bucket,
+                    endpoint: process.env.S3_ENDPOINT,
+                    // MinIO / Supabase / other S3-compatible servers require
+                    // path-style addressing.
+                    // https://docs.medusajs.com/resources/infrastructure-modules/file/s3
+                    additional_client_config: {
+                      forcePathStyle: true,
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        ]
+      : []),
   ],
 })

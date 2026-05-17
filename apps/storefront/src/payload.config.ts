@@ -4,6 +4,7 @@ import sharp from "sharp"
 import { lexicalEditor } from "@payloadcms/richtext-lexical"
 import { postgresAdapter } from "@payloadcms/db-postgres"
 import { mcpPlugin } from "@payloadcms/plugin-mcp"
+import { s3Storage } from "@payloadcms/storage-s3"
 import { buildConfig } from "payload"
 import { Users } from "./collections/Users"
 import { Media } from "./collections/Media"
@@ -50,6 +51,26 @@ export default buildConfig({
           description: "Storefront media library (images, alt text).",
           enabled: { find: true },
         },
+      },
+    }),
+    // Off when S3_BUCKET is unset — falls back to Media collection's
+    // local staticDir so devs can run Payload without MinIO.
+    // https://payloadcms.com/docs/upload/storage-adapters
+    s3Storage({
+      enabled: Boolean(process.env.S3_BUCKET),
+      collections: {
+        [Media.slug]: true,
+      },
+      bucket: process.env.S3_BUCKET ?? "",
+      config: {
+        credentials: {
+          accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "",
+          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
+        },
+        region: process.env.S3_REGION,
+        endpoint: process.env.S3_ENDPOINT,
+        // MinIO requires path-style addressing.
+        forcePathStyle: true,
       },
     }),
   ],
