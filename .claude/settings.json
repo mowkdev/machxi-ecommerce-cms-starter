@@ -5,6 +5,7 @@
     "claude-code-setup@claude-plugins-official": true,
     "ecommerce-storefront@medusa": true,
     "learn-medusa@medusa": true,
-    "medusa-dev@medusa": true
+    "medusa-dev@medusa": true,
+    "payload@payload-marketplace": true
   }
 }
