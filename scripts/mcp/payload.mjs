@@ -35,9 +35,20 @@ if (!key) {
   process.exit(1)
 }
 
+// `shell: true` is required on Windows so npx.cmd can be resolved
+// (Node 20.12+ rejects direct spawn of .cmd files per CVE-2024-27980).
+// But with shell:true on Windows, Node joins argv with plain spaces and
+// hands the result to cmd.exe, which re-tokenizes — so an unquoted Bearer
+// header gets split into stray args and mcp-remote sees an empty
+// Authorization value, falling into an OAuth discovery loop. Wrap the
+// header in literal double quotes so cmd.exe keeps it as one token.
+const headerArg =
+  process.platform === "win32"
+    ? `"Authorization: Bearer ${key}"`
+    : `Authorization: Bearer ${key}`
 const child = spawn(
   "npx",
-  ["-y", "mcp-remote", url, "--header", `Authorization: Bearer ${key}`],
+  ["-y", "mcp-remote", url, "--header", headerArg],
   { stdio: "inherit", shell: process.platform === "win32" },
 )
 

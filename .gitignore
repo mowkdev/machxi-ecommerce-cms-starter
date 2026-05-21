@@ -45,6 +45,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Claude Code worktrees (per-developer, transient)
+.claude/worktrees/
+
 # macOS system files
 .DS_Store
 .DS_Store?
