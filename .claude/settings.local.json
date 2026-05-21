@@ -33,7 +33,17 @@
       "Bash(pnpm install *)",
       "Bash(npx -y mcp-remote --help)",
       "Bash(curl -i -s -X POST 'http://localhost:8000/api/mcp' -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{},\"clientInfo\":{\"name\":\"probe\",\"version\":\"0.0.1\"}}}')",
-      "Skill(medusa-dev:building-admin-dashboard-customizations)"
+      "Skill(medusa-dev:building-admin-dashboard-customizations)",
+      "Skill(superpowers:systematic-debugging)",
+      "Bash(claude mcp *)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri http://localhost:8000/api/mcp -Method GET -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop; \"STATUS: $\\($r.StatusCode\\)\" } catch { \"ERROR: $\\($_.Exception.Message\\)\" })",
+      "PowerShell(Get-NetTCPConnection *)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri http://localhost:8000/api/mcp -Method POST -Headers @{ \"Content-Type\" = \"application/json\"; \"Accept\" = \"application/json, text/event-stream\" } -Body '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test\",\"version\":\"1.0\"}}}' -UseBasicParsing -TimeoutSec 5 -ErrorAction Stop; \"STATUS: $\\($r.StatusCode\\)\"; $r.Content.Substring\\(0,[Math]::Min\\(500,$r.Content.Length\\)\\) } catch { \"ERROR: $\\($_.Exception.Message\\)\"; if \\($_.Exception.Response\\) { $sr = New-Object System.IO.StreamReader\\($_.Exception.Response.GetResponseStream\\(\\)\\); \"BODY: $\\($sr.ReadToEnd\\(\\)\\)\" } })",
+      "Bash(git *)",
+      "Bash(curl -s -i -X POST https://docs.medusajs.com/mcp -H \"Content-Type: application/json\" -H \"Accept: application/json, text/event-stream\" -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"diag\",\"version\":\"0\"}}}')",
+      "Bash(curl -s -i http://localhost:8000/api/mcp)",
+      "Bash(curl -s -o /dev/null -w \"storefront root: %{http_code}\\\\n\" http://localhost:8000/)",
+      "Bash(curl -s https://docs.medusajs.com/.well-known/oauth-protected-resource)"
     ]
   },
   "enabledMcpjsonServers": [
