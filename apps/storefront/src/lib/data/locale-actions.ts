@@ -1,39 +1,48 @@
 "use server"
 
 import { revalidateTag } from "next/cache"
-import { cookies as nextCookies } from "next/headers"
+import { getLocale as getIntlLocale } from "next-intl/server"
 
 import { sdk } from "@/lib/medusa"
 import { getAuthHeaders, getCacheTag, getCartId } from "@/lib/data/cookies"
+import {
+  type LocaleCode,
+  isLocaleCode,
+  localeToMedusa,
+} from "@/i18n/localization"
+import { redirect } from "@/i18n/navigation"
 
-const LOCALE_COOKIE_NAME = "_medusa_locale"
-
-export const getLocale = async (): Promise<string | null> => {
+/**
+ * URL-driven locale read via next-intl. Returns null if invoked outside a
+ * request scope (eg. during a build-time prerender of a non-locale route).
+ */
+export const getLocale = async (): Promise<LocaleCode | null> => {
   try {
-    const cookies = await nextCookies()
-    return cookies.get(LOCALE_COOKIE_NAME)?.value ?? null
+    const value = await getIntlLocale()
+    return isLocaleCode(value) ? value : null
   } catch {
     return null
   }
 }
 
-export const setLocaleCookie = async (locale: string) => {
-  const cookies = await nextCookies()
-  cookies.set(LOCALE_COOKIE_NAME, locale, {
-    maxAge: 60 * 60 * 24 * 365,
-    httpOnly: false,
-    sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
-  })
-}
-
-export const updateLocale = async (localeCode: string): Promise<string> => {
-  await setLocaleCookie(localeCode)
-
+/**
+ * Switch storefront locale: persist the choice on the Medusa cart (so emails
+ * and notifications use the right language) and redirect the user to the
+ * same path under the new locale prefix. Called from the language switcher.
+ */
+export const updateLocale = async (
+  localeCode: LocaleCode,
+  pathname: string = "/"
+): Promise<void> => {
   const cartId = await getCartId()
   if (cartId) {
     const headers = { ...(await getAuthHeaders()) }
-    await sdk.store.cart.update(cartId, { locale: localeCode }, {}, headers)
+    await sdk.store.cart.update(
+      cartId,
+      { locale: localeToMedusa(localeCode) },
+      {},
+      headers
+    )
     const cartCacheTag = await getCacheTag("carts")
     if (cartCacheTag) revalidateTag(cartCacheTag)
   }
@@ -47,5 +56,5 @@ export const updateLocale = async (localeCode: string): Promise<string> => {
   const collectionsCacheTag = await getCacheTag("collections")
   if (collectionsCacheTag) revalidateTag(collectionsCacheTag)
 
-  return localeCode
+  redirect({ href: pathname, locale: localeCode })
 }

@@ -12,6 +12,7 @@ import { Users } from "./collections/Users"
 import { Media } from "./collections/Media"
 import { Pages } from "./collections/Pages"
 import { Products } from "./collections/Products"
+import { DEFAULT_LOCALE, LOCALES } from "./i18n/localization"
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -38,6 +39,14 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, Pages, Products],
+  // Same locale codes the storefront URL segment and next-intl use. Medusa
+  // accepts BCP47 (en-US, lv-LV) — that mapping lives in
+  // src/i18n/localization.ts and is applied at the Medusa SDK boundary.
+  localization: {
+    locales: LOCALES.map((l) => ({ code: l.code, label: l.label })),
+    defaultLocale: DEFAULT_LOCALE,
+    fallback: true,
+  },
   editor: defaultLexical,
   secret: payloadSecret,
   typescript: {

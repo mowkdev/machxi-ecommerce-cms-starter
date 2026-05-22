@@ -3,6 +3,11 @@ import type { MetadataRoute } from "next"
 import { listCollections } from "@/lib/data/collections"
 import { listProducts } from "@/lib/data/products"
 import { listRegions } from "@/lib/data/regions"
+import {
+  DEFAULT_LOCALE,
+  LOCALES,
+  LOCALE_CODES,
+} from "@/i18n/localization"
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
@@ -16,6 +21,29 @@ const STATIC_PATHS = [
   "/sign-up",
   "/forgot-password",
 ]
+
+function alternatesFor(path: string): MetadataRoute.Sitemap[number]["alternates"] {
+  const languages: Record<string, string> = {}
+  for (const code of LOCALE_CODES) {
+    languages[code] = `${SITE_URL}/${code}${path}`
+  }
+  languages["x-default"] = `${SITE_URL}/${DEFAULT_LOCALE}${path}`
+  return { languages }
+}
+
+function entriesForPath(
+  path: string,
+  lastModified: Date | string,
+  changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"]
+): MetadataRoute.Sitemap {
+  const alternates = alternatesFor(path)
+  return LOCALES.map((locale) => ({
+    url: `${SITE_URL}/${locale.code}${path}`,
+    lastModified,
+    changeFrequency,
+    alternates,
+  }))
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const regions = await listRegions().catch(() => [])
@@ -32,11 +60,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = []
 
   for (const path of STATIC_PATHS) {
-    entries.push({
-      url: `${SITE_URL}${path}`,
-      lastModified,
-      changeFrequency: "weekly",
-    })
+    entries.push(...entriesForPath(path, lastModified, "weekly"))
   }
 
   try {
@@ -46,11 +70,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
     for (const p of products) {
       if (!p.handle) continue
-      entries.push({
-        url: `${SITE_URL}/products/${p.handle}`,
-        lastModified: p.updated_at ? new Date(p.updated_at) : lastModified,
-        changeFrequency: "weekly",
-      })
+      const lm = p.updated_at ? new Date(p.updated_at) : lastModified
+      entries.push(...entriesForPath(`/products/${p.handle}`, lm, "weekly"))
     }
   } catch {
     // Backend unavailable — skip products
@@ -60,11 +81,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const { collections } = await listCollections({ limit: "100" })
     for (const c of collections) {
       if (!c.handle) continue
-      entries.push({
-        url: `${SITE_URL}/collections/${c.handle}`,
-        lastModified,
-        changeFrequency: "weekly",
-      })
+      entries.push(
+        ...entriesForPath(`/collections/${c.handle}`, lastModified, "weekly")
+      )
     }
   } catch {
     // Backend unavailable — skip collections

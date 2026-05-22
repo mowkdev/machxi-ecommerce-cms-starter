@@ -2,8 +2,7 @@ import type { CollectionAfterChangeHook, CollectionAfterDeleteHook } from "paylo
 import { revalidatePath, revalidateTag } from "next/cache"
 
 import type { Page } from "@/payload-types"
-
-const DEFAULT_COUNTRY = process.env.NEXT_PUBLIC_DEFAULT_COUNTRY_CODE || "us"
+import { LOCALE_CODES } from "@/i18n/localization"
 
 function getPageURL(doc: Partial<Page> | null | undefined): string | null {
   if (!doc) return null
@@ -15,6 +14,15 @@ function getPageURL(doc: Partial<Page> | null | undefined): string | null {
   return doc.slug ? `/${doc.slug}` : null
 }
 
+function revalidateForAllLocales(url: string, logger?: { info: (m: string) => void }) {
+  for (const code of LOCALE_CODES) {
+    const path = `/${code}${url}`
+    logger?.info(`Revalidating page at path: ${path}`)
+    revalidatePath(path, "page")
+  }
+  revalidateTag("pages-sitemap", "max")
+}
+
 export const revalidatePage: CollectionAfterChangeHook<Page> = ({
   doc,
   previousDoc,
@@ -24,22 +32,12 @@ export const revalidatePage: CollectionAfterChangeHook<Page> = ({
 
   if (doc._status === "published") {
     const url = getPageURL(doc)
-    if (url) {
-      const path = `/${DEFAULT_COUNTRY}${url}`
-      payload.logger.info(`Revalidating page at path: ${path}`)
-      revalidatePath(path, "page")
-      revalidateTag("pages-sitemap", "max")
-    }
+    if (url) revalidateForAllLocales(url, payload.logger)
   }
 
   if (previousDoc?._status === "published" && doc._status !== "published") {
     const oldUrl = getPageURL(previousDoc)
-    if (oldUrl) {
-      const oldPath = `/${DEFAULT_COUNTRY}${oldUrl}`
-      payload.logger.info(`Revalidating old page at path: ${oldPath}`)
-      revalidatePath(oldPath, "page")
-      revalidateTag("pages-sitemap", "max")
-    }
+    if (oldUrl) revalidateForAllLocales(oldUrl, payload.logger)
   }
 
   return doc
@@ -51,9 +49,6 @@ export const revalidateDelete: CollectionAfterDeleteHook<Page> = ({
 }) => {
   if (context?.disableRevalidate) return doc
   const url = getPageURL(doc)
-  if (url) {
-    revalidatePath(`/${DEFAULT_COUNTRY}${url}`, "page")
-    revalidateTag("pages-sitemap", "max")
-  }
+  if (url) revalidateForAllLocales(url)
   return doc
 }

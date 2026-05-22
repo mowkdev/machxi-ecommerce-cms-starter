@@ -1,17 +1,11 @@
 import type { Metadata } from "next"
 import { Inter, Tenor_Sans } from "next/font/google"
+import { getLocale } from "next-intl/server"
 
 import "@/styles/globals.css"
 
-import { CartUiProvider } from "@/modules/cart/components/cart-panel"
-import { CartProvider } from "@/modules/cart/components/cart-provider"
-import { MobileMenuProvider } from "@/modules/layout/components/mobile-menu"
-import { ThemeProvider } from "@/modules/layout/components/theme-provider"
 import { themeNoFlashScript } from "@/modules/layout/components/theme-no-flash-script"
-import { SmoothScrollProvider } from "@/modules/layout/components/smooth-scroll"
-import { ToastProvider } from "@/modules/common/ui/toast"
 import { siteConfig } from "@/config/site"
-import { retrieveCart } from "@/lib/data/cart"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -37,17 +31,16 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const cart = await retrieveCart().catch(() => null)
+  const locale = await getLocale()
 
   return (
     <html
-      lang="en"
+      lang={locale}
       data-theme="day"
       suppressHydrationWarning
       className={`${inter.variable} ${tenorSans.variable}`}
       style={
         {
-          // Override the CSS variables with Next.js font fallbacks
           "--font-body":
             "var(--font-inter), -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif",
           "--font-display":
@@ -63,19 +56,7 @@ export default async function RootLayout({
         */}
         <script dangerouslySetInnerHTML={{ __html: themeNoFlashScript }} />
       </head>
-      <body>
-        <ThemeProvider>
-          <ToastProvider>
-            <MobileMenuProvider>
-              <CartProvider initialCart={cart}>
-                <CartUiProvider>
-                  <SmoothScrollProvider>{children}</SmoothScrollProvider>
-                </CartUiProvider>
-              </CartProvider>
-            </MobileMenuProvider>
-          </ToastProvider>
-        </ThemeProvider>
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

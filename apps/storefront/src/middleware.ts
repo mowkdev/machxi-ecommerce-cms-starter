@@ -1,11 +1,15 @@
 import { HttpTypes } from "@medusajs/types"
 import { NextRequest, NextResponse } from "next/server"
+import createIntlMiddleware from "next-intl/middleware"
 
 import { COUNTRY_CODE_COOKIE_NAME } from "@/lib/data/cookies"
+import { routing } from "@/i18n/routing"
 
 const BACKEND_URL = process.env.MEDUSA_BACKEND_URL
 const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || "us"
+
+const intlMiddleware = createIntlMiddleware(routing)
 
 const regionMapCache = {
   regionMap: new Map<string, HttpTypes.StoreRegion>(),
@@ -108,14 +112,27 @@ async function getCountryCode(
 }
 
 /**
- * Middleware to manage region selection via a country-code cookie. The
- * country code is no longer part of the URL — see the migration guide at
- * https://docs.medusajs.com/resources/nextjs-starter/guides/remove-country-code.
+ * Country code (region/currency) is tracked in a cookie — see the migration
+ * guide at https://docs.medusajs.com/resources/nextjs-starter/guides/remove-country-code.
+ * Locale (language) is tracked in the URL via next-intl. The two axes are
+ * independent; next-intl runs first to handle locale redirects, then we
+ * apply the region cookie.
  */
 export async function middleware(request: NextRequest) {
   // Static assets bypass everything.
   if (request.nextUrl.pathname.includes(".")) {
     return NextResponse.next()
+  }
+
+  // Hand off to next-intl: if no locale prefix is present it returns a
+  // redirect to `/<defaultLocale>/...`; otherwise a rewrite + headers.
+  const intlResponse = intlMiddleware(request)
+
+  // If next-intl is redirecting (no locale in URL), just return — the region
+  // cookie will be set on the next request (which will hit the locale-prefixed
+  // path and fall through to the region logic below).
+  if (intlResponse.headers.get("location")) {
+    return intlResponse
   }
 
   const cacheIdCookie = request.cookies.get("_medusa_cache_id")
@@ -139,7 +156,9 @@ export async function middleware(request: NextRequest) {
     )
   }
 
-  const response = NextResponse.next()
+  // Build a response that carries next-intl's rewrite + headers and our
+  // region cookies layered on top.
+  const response = intlResponse
 
   if (!cacheIdCookie) {
     response.cookies.set("_medusa_cache_id", cacheId, {

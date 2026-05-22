@@ -1,0 +1,27 @@
+{
+  "nav": {
+    "shop": "Shop",
+    "collections": "Collections",
+    "cart": "Cart",
+    "account": "Account",
+    "signIn": "Sign in",
+    "signOut": "Sign out"
+  },
+  "cart": {
+    "empty": "Your cart is empty",
+    "subtotal": "Subtotal",
+    "checkout": "Checkout",
+    "addToCart": "Add to cart",
+    "remove": "Remove"
+  },
+  "product": {
+    "outOfStock": "Out of stock",
+    "selectVariant": "Select a variant"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "search": "Search",
+    "language": "Language"
+  }
+}

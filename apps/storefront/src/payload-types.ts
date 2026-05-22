@@ -97,10 +97,10 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'lv') | ('en' | 'lv')[];
   globals: {};
   globalsSelect: {};
-  locale: null;
+  locale: 'en' | 'lv';
   widgets: {
     collections: CollectionsWidget;
   };

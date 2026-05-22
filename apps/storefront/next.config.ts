@@ -1,9 +1,12 @@
 import type { NextConfig } from "next"
 import { withPayload } from "@payloadcms/next/withPayload"
+import createNextIntlPlugin from "next-intl/plugin"
 
 import { checkEnvVariables } from "./check-env-variables"
 
 checkEnvVariables()
+
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts")
 
 const S3_HOSTNAME = process.env.MEDUSA_CLOUD_S3_HOSTNAME
 const S3_PATHNAME = process.env.MEDUSA_CLOUD_S3_PATHNAME
@@ -52,4 +55,4 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withPayload(nextConfig)
+export default withPayload(withNextIntl(nextConfig))

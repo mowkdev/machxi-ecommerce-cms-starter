@@ -1,12 +1,14 @@
 "use client"
 
-import Link from "next/link"
 import type { ComponentProps } from "react"
 
+import { Link } from "@/i18n/navigation"
+
 /**
- * Country code is now stored in a cookie instead of a URL prefix, so this is
- * a thin wrapper around Next's `Link`. We keep the component name and export
- * to avoid churn at all the call sites that imported it.
+ * Wraps the next-intl Link so internal navigation automatically carries the
+ * current URL locale prefix (eg. /en/products, /lv/products). External and
+ * absolute URLs pass through unchanged. Country code (region) lives in a
+ * cookie — see middleware.ts.
  */
 export default function LocalizedLink(props: ComponentProps<typeof Link>) {
   return <Link {...props} />

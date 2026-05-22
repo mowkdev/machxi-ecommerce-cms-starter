@@ -19,6 +19,7 @@ import {
 } from "@/lib/data/cookies"
 import { getRegion } from "@/lib/data/regions"
 import { getLocale } from "@/lib/data/locale-actions"
+import { localeToMedusa } from "@/i18n/localization"
 
 const DEFAULT_CART_FIELDS =
   "*items, *region, *items.product, *items.variant, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name"
@@ -59,7 +60,10 @@ export async function getOrSetCart(
   if (!cart) {
     const locale = await getLocale()
     const { cart: created } = await sdk.store.cart.create(
-      { region_id: region.id, locale: locale || undefined },
+      {
+        region_id: region.id,
+        locale: locale ? localeToMedusa(locale) : undefined,
+      },
       {},
       headers
     )

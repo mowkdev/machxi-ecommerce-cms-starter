@@ -1,0 +1,27 @@
+{
+  "nav": {
+    "shop": "Veikals",
+    "collections": "Kolekcijas",
+    "cart": "Grozs",
+    "account": "Konts",
+    "signIn": "Ienākt",
+    "signOut": "Iziet"
+  },
+  "cart": {
+    "empty": "Jūsu grozs ir tukšs",
+    "subtotal": "Starpsumma",
+    "checkout": "Noformēt pasūtījumu",
+    "addToCart": "Pievienot grozam",
+    "remove": "Noņemt"
+  },
+  "product": {
+    "outOfStock": "Nav noliktavā",
+    "selectVariant": "Izvēlieties variantu"
+  },
+  "common": {
+    "loading": "Notiek ielāde…",
+    "error": "Kaut kas nogāja greizi",
+    "search": "Meklēt",
+    "language": "Valoda"
+  }
+}

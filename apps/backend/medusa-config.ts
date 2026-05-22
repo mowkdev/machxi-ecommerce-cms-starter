@@ -15,7 +15,16 @@ module.exports = defineConfig({
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     },
   },
+  // Translation module is gated behind the `translation` feature flag.
+  // Translates Product, ProductCategory, ProductCollection, ProductVariant,
+  // Region, ShippingOption, etc. Storefront sends locale via the
+  // `x-medusa-locale` header (BCP47 like `en-US`, `lv-LV`) — see
+  // apps/storefront/src/lib/medusa.ts.
+  featureFlags: {
+    translation: true,
+  },
   modules: [
+    { resolve: "@medusajs/medusa/translation" },
     {
       resolve: "./src/modules/payload",
       options: {

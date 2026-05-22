@@ -54,7 +54,7 @@ export const Pages: CollectionConfig<"pages"> = {
     useAsTitle: "title",
   },
   fields: [
-    { name: "title", type: "text", required: true },
+    { name: "title", type: "text", required: true, localized: true },
     {
       type: "tabs",
       tabs: [
@@ -71,6 +71,7 @@ export const Pages: CollectionConfig<"pages"> = {
               required: true,
               blocks: [CallToAction, Content, MediaBlock],
               admin: { initCollapsed: true },
+              localized: true,
             },
           ],
         },
