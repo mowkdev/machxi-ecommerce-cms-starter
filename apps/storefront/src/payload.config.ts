@@ -73,6 +73,14 @@ export default buildConfig({
           description: "Storefront media library (images, alt text).",
           enabled: { find: true },
         },
+        pages: {
+          description: "CMS pages — hero + layout blocks. Slug 'home' powers /.",
+          enabled: { find: true, update: true, create: true, delete: false },
+        },
+        users: {
+          description: "Admin users (read-only via MCP).",
+          enabled: { find: true },
+        },
       },
     }),
     // Off when S3_BUCKET is unset — falls back to Media collection's

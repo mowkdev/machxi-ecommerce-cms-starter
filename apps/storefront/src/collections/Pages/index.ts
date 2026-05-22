@@ -14,7 +14,9 @@ import { authenticated } from "@/access/authenticated"
 import { authenticatedOrPublished } from "@/access/authenticatedOrPublished"
 import { CallToAction } from "@/blocks/CallToAction/config"
 import { Content } from "@/blocks/Content/config"
+import { Creator } from "@/blocks/Creator/config"
 import { MediaBlock } from "@/blocks/MediaBlock/config"
+import { ShopCta } from "@/blocks/ShopCta/config"
 import { hero } from "@/heros/config"
 import { populatePublishedAt } from "@/hooks/populatePublishedAt"
 import { generatePreviewPath } from "@/utilities/generatePreviewPath"
@@ -69,7 +71,7 @@ export const Pages: CollectionConfig<"pages"> = {
               name: "layout",
               type: "blocks",
               required: true,
-              blocks: [CallToAction, Content, MediaBlock],
+              blocks: [CallToAction, Content, MediaBlock, Creator, ShopCta],
               admin: { initCollapsed: true },
               localized: true,
             },

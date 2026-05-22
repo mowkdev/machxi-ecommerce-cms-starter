@@ -9,6 +9,8 @@ import {
 
 import { linkGroup } from "@/fields/linkGroup"
 
+const hidesContentFields = (type: unknown) => type !== "parallax"
+
 export const hero: Field = {
   name: "hero",
   type: "group",
@@ -22,6 +24,7 @@ export const hero: Field = {
       required: true,
       options: [
         { label: "None", value: "none" },
+        { label: "Parallax", value: "parallax" },
         { label: "High Impact", value: "highImpact" },
         { label: "Medium Impact", value: "mediumImpact" },
         { label: "Low Impact", value: "lowImpact" },
@@ -31,6 +34,9 @@ export const hero: Field = {
       name: "richText",
       type: "richText",
       label: false,
+      admin: {
+        condition: (_, { type } = {}) => hidesContentFields(type),
+      },
       editor: lexicalEditor({
         features: ({ rootFeatures }) => [
           ...rootFeatures,
@@ -40,7 +46,12 @@ export const hero: Field = {
         ],
       }),
     },
-    linkGroup({ overrides: { maxRows: 2 } }),
+    linkGroup({
+      overrides: {
+        maxRows: 2,
+        admin: { condition: (_, { type } = {}) => hidesContentFields(type) },
+      },
+    }),
     {
       name: "media",
       type: "upload",

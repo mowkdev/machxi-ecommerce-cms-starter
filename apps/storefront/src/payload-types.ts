@@ -233,7 +233,7 @@ export interface Page {
   id: number;
   title: string;
   hero: {
-    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    type: 'none' | 'parallax' | 'highImpact' | 'mediumImpact' | 'lowImpact';
     richText?: {
       root: {
         type: string;
@@ -270,7 +270,7 @@ export interface Page {
       | null;
     media?: (number | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock)[];
+  layout: (CallToActionBlock | ContentBlock | MediaBlock | CreatorBlock | ShopCtaBlock)[];
   meta?: {
     title?: string | null;
     /**
@@ -397,6 +397,116 @@ export interface MediaBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CreatorBlock".
+ */
+export interface CreatorBlock {
+  video: {
+    /**
+     * YouTube video ID (the v= part of the URL).
+     */
+    youtubeId: string;
+    title?: string | null;
+    /**
+     * Optional thumbnail shown before the video loads.
+     */
+    posterImage?: (number | null) | Media;
+  };
+  author?: {
+    eyebrow?: string | null;
+    headlinePrefix?: string | null;
+    /**
+     * Italicised emphasis word inside the headline.
+     */
+    headlineAccent?: string | null;
+    headlineSuffix?: string | null;
+    paragraphs?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    signName?: string | null;
+    signRole?: string | null;
+  };
+  socials?: {
+    eyebrow?: string | null;
+    heading?: string | null;
+    total?: {
+      value?: string | null;
+      label?: string | null;
+    };
+    accounts?:
+      | {
+          platform: 'youtube' | 'instagram' | 'tiktok' | 'x' | 'facebook';
+          url: string;
+          handle: string;
+          count?: string | null;
+          countLabel?: string | null;
+          cta?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'creator';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ShopCtaBlock".
+ */
+export interface ShopCtaBlock {
+  eyebrow?: string | null;
+  headlinePrefix?: string | null;
+  /**
+   * Emphasised word inside the headline.
+   */
+  headlineAccent?: string | null;
+  headlineSuffix?: string | null;
+  paragraphs?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  ctaLabel: string;
+  /**
+   * Relative path (e.g. /products) or absolute URL.
+   */
+  ctaHref: string;
+  stamp?: {
+    line1?: string | null;
+    line2?: string | null;
+    /**
+     * Small text under the stamp (e.g. № 24).
+     */
+    small?: string | null;
+  };
+  stats?:
+    | {
+        value: string;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Up to three Polaroid-style images.
+   */
+  images?:
+    | {
+        media?: (number | null) | Media;
+        alt?: string | null;
+        captionLeft?: string | null;
+        captionRight?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'shopCta';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products".
  */
 export interface Product {
@@ -520,6 +630,26 @@ export interface PayloadMcpApiKey {
   media?: {
     /**
      * Allow clients to find media.
+     */
+    find?: boolean | null;
+  };
+  pages?: {
+    /**
+     * Allow clients to find pages.
+     */
+    find?: boolean | null;
+    /**
+     * Allow clients to create pages.
+     */
+    create?: boolean | null;
+    /**
+     * Allow clients to update pages.
+     */
+    update?: boolean | null;
+  };
+  users?: {
+    /**
+     * Allow clients to find users.
      */
     find?: boolean | null;
   };
@@ -833,6 +963,8 @@ export interface PagesSelect<T extends boolean = true> {
         cta?: T | CallToActionBlockSelect<T>;
         content?: T | ContentBlockSelect<T>;
         mediaBlock?: T | MediaBlockSelect<T>;
+        creator?: T | CreatorBlockSelect<T>;
+        shopCta?: T | ShopCtaBlockSelect<T>;
       };
   meta?:
     | T
@@ -917,6 +1049,103 @@ export interface MediaBlockSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CreatorBlock_select".
+ */
+export interface CreatorBlockSelect<T extends boolean = true> {
+  video?:
+    | T
+    | {
+        youtubeId?: T;
+        title?: T;
+        posterImage?: T;
+      };
+  author?:
+    | T
+    | {
+        eyebrow?: T;
+        headlinePrefix?: T;
+        headlineAccent?: T;
+        headlineSuffix?: T;
+        paragraphs?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        signName?: T;
+        signRole?: T;
+      };
+  socials?:
+    | T
+    | {
+        eyebrow?: T;
+        heading?: T;
+        total?:
+          | T
+          | {
+              value?: T;
+              label?: T;
+            };
+        accounts?:
+          | T
+          | {
+              platform?: T;
+              url?: T;
+              handle?: T;
+              count?: T;
+              countLabel?: T;
+              cta?: T;
+              id?: T;
+            };
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ShopCtaBlock_select".
+ */
+export interface ShopCtaBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  headlinePrefix?: T;
+  headlineAccent?: T;
+  headlineSuffix?: T;
+  paragraphs?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  ctaLabel?: T;
+  ctaHref?: T;
+  stamp?:
+    | T
+    | {
+        line1?: T;
+        line2?: T;
+        small?: T;
+      };
+  stats?:
+    | T
+    | {
+        value?: T;
+        label?: T;
+        id?: T;
+      };
+  images?:
+    | T
+    | {
+        media?: T;
+        alt?: T;
+        captionLeft?: T;
+        captionRight?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
@@ -995,6 +1224,18 @@ export interface PayloadMcpApiKeysSelect<T extends boolean = true> {
         update?: T;
       };
   media?:
+    | T
+    | {
+        find?: T;
+      };
+  pages?:
+    | T
+    | {
+        find?: T;
+        create?: T;
+        update?: T;
+      };
+  users?:
     | T
     | {
         find?: T;

@@ -2,6 +2,7 @@ import type { HeroProps } from "./types"
 import { HighImpactHero } from "./HighImpactHero"
 import { LowImpactHero } from "./LowImpactHero"
 import { MediumImpactHero } from "./MediumImpactHero"
+import { ParallaxHero } from "@/modules/home/components/parallax-hero"
 
 const heroes = {
   highImpact: HighImpactHero,
@@ -12,7 +13,8 @@ const heroes = {
 export function RenderHero(props: HeroProps) {
   const { type } = props
   if (!type || type === "none") return null
-  const HeroToRender = heroes[type]
+  if (type === "parallax") return <ParallaxHero />
+  const HeroToRender = heroes[type as keyof typeof heroes]
   if (!HeroToRender) return null
   return <HeroToRender {...props} />
 }

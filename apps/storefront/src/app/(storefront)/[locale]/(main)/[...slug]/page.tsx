@@ -1,14 +1,9 @@
 import type { Metadata } from "next"
-import { draftMode } from "next/headers"
-import { cache } from "react"
-import { getPayload, type TypedLocale } from "payload"
-import configPromise from "@payload-config"
+import type { TypedLocale } from "payload"
 
-import type { Page } from "@/payload-types"
-import { RenderHero } from "@/heros/RenderHero"
-import { RenderBlocks } from "@/blocks/RenderBlocks"
-import { LivePreviewListener } from "@/components/payload/LivePreviewListener"
+import { PageContent } from "@/components/payload/PageContent"
 import { PayloadRedirects } from "@/components/payload/PayloadRedirects"
+import { getPageByUrl } from "@/queries/pages"
 import { generateMeta } from "@/utilities/generateMeta"
 
 type Params = { slug?: string[]; locale: string }
@@ -18,55 +13,18 @@ export async function generateStaticParams() {
   return []
 }
 
-const queryPageByUrl = cache(
-  async ({
-    url,
-    locale,
-  }: {
-    url: string
-    locale: TypedLocale
-  }): Promise<Page | null> => {
-    const { isEnabled: draft } = await draftMode()
-    const payload = await getPayload({ config: configPromise })
-
-    const result = await payload.find({
-      collection: "pages",
-      draft,
-      limit: 1,
-      pagination: false,
-      overrideAccess: draft,
-      locale,
-      where: {
-        or: [
-          { "breadcrumbs.url": { equals: url } },
-          { slug: { equals: url.replace(/^\//, "") } },
-        ],
-      },
-    })
-
-    return (result.docs?.[0] as Page | undefined) ?? null
-  }
-)
+function buildUrl(slug: string[]): string {
+  return "/" + slug.map((s) => decodeURIComponent(s)).join("/")
+}
 
 export default async function Page({ params }: { params: Promise<Params> }) {
   const { slug = [], locale } = await params
-  const url = "/" + slug.map((s) => decodeURIComponent(s)).join("/")
-  const { isEnabled: draft } = await draftMode()
+  const url = buildUrl(slug)
+  const page = await getPageByUrl({ url, locale: locale as TypedLocale })
 
-  const page = await queryPageByUrl({ url, locale: locale as TypedLocale })
+  if (!page) return <PayloadRedirects url={url} />
 
-  if (!page) {
-    return <PayloadRedirects url={url} />
-  }
-
-  return (
-    <article className="pb-24 pt-8">
-      <PayloadRedirects disableNotFound url={url} />
-      {draft ? <LivePreviewListener /> : null}
-      <RenderHero {...page.hero} />
-      <RenderBlocks blocks={page.layout} />
-    </article>
-  )
+  return <PageContent page={page} url={url} />
 }
 
 export async function generateMetadata({
@@ -75,7 +33,7 @@ export async function generateMetadata({
   params: Promise<Params>
 }): Promise<Metadata> {
   const { slug = [], locale } = await params
-  const url = "/" + slug.map((s) => decodeURIComponent(s)).join("/")
-  const page = await queryPageByUrl({ url, locale: locale as TypedLocale })
+  const url = buildUrl(slug)
+  const page = await getPageByUrl({ url, locale: locale as TypedLocale })
   return generateMeta({ doc: page })
 }
