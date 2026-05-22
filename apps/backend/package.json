@@ -1,8 +1,7 @@
 {
-  "name": "@dtc/backend",
+  "name": "@machxi/backend",
   "version": "0.0.1",
-  "description": "A starter for Medusa projects.",
-  "author": "Medusa (https://medusajs.com)",
+  "description": "MachXI Ecommerce CMS Starter — Medusa v2 backend.",
   "license": "MIT",
   "keywords": [
     "sqlite",

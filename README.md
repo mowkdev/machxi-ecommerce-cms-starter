@@ -1,165 +1,141 @@
-<p align="center">
-  <a href="https://www.medusajs.com">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/59018053/229103275-b5e482bb-4601-46e6-8142-244f531cebdb.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg">
-    <img alt="Medusa logo" src="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg">
-    </picture>
-  </a>
-</p>
-<h1 align="center">
-  Medusa DTC Starter
-</h1>
+# MachXI Ecommerce CMS Starter
 
-<h4 align="center">
-  <a href="https://docs.medusajs.com">Documentation</a> |
-  <a href="https://www.medusajs.com">Website</a>
-</h4>
+A monorepo starter for direct-to-consumer ecommerce: Medusa v2 backend, Next.js
+15 storefront with PayloadCMS v3 embedded, dual Postgres, MinIO-backed S3, and
+AI tooling (Claude Code MCP servers + plugins) wired up out of the box.
 
-<p align="center">
-  Building blocks for digital commerce
-</p>
-<p align="center">
-  <a href="https://github.com/medusajs/medusa/blob/develop/LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="Medusa is released under the MIT license." />
-  </a>
-  <a href="https://circleci.com/gh/medusajs/medusa">
-    <img src="https://circleci.com/gh/medusajs/medusa.svg?style=shield" alt="Current CircleCI build status." />
-  </a>
-  <a href="https://github.com/medusajs/medusa/blob/develop/CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" alt="PRs welcome!" />
-  </a>
-    <a href="https://www.producthunt.com/posts/medusa"><img src="https://img.shields.io/badge/Product%20Hunt-%231%20Product%20of%20the%20Day-%23DA552E" alt="Product Hunt"></a>
-  <a href="https://discord.gg/xpCwq3Kfn8">
-    <img src="https://img.shields.io/badge/chat-on%20discord-7289DA.svg" alt="Discord Chat" />
-  </a>
-  <a href="https://twitter.com/intent/follow?screen_name=medusajs">
-    <img src="https://img.shields.io/twitter/follow/medusajs.svg?label=Follow%20@medusajs" alt="Follow @medusajs" />
-  </a>
-</p>
+## Stack
 
-# Medusa DTC Starter
+- **Backend** — Medusa v2 (REST API + admin dashboard)
+- **Storefront** — Next.js 15 (App Router, React 19) + PayloadCMS v3
+- **Databases** — Two isolated Postgres databases (Medusa and Payload)
+- **Storage** — S3-compatible object storage (MinIO locally)
+- **Tooling** — Turborepo, pnpm workspaces, TypeScript strict
+- **AI tooling** — Six pre-configured MCP servers + curated Claude Code plugins
+  (see [`docs/MCP.md`](docs/MCP.md))
 
-A production-ready monorepo starter for direct-to-consumer ecommerce stores powered by Medusa and Next.js. Includes a fully featured storefront with product browsing, cart, checkout, customer accounts, and order management.
+## Prerequisites
 
-## Features
+- Node.js **20+**
+- pnpm **10+** (the repo pins via `packageManager`)
+- Docker (for local Postgres + MinIO)
 
-- All of [Medusa's commerce features](https://docs.medusajs.com/resources/commerce-modules)
-- Multi-region support with automatic country detection
-- Product catalog with variant selection
-- Cart with promotion codes
-- Multi-step checkout with shipping and payment
-- Customer accounts with order history and address management
-- Order transfer between accounts
-
-## Getting Started
-
-### Deploy with Medusa Cloud
-
-The fastest way to get started is deploying with [Medusa Cloud](https://cloud.medusajs.com):
-
-1. [Create a Medusa Cloud account](https://cloud.medusajs.com)
-2. Deploy this starter directly from your dashboard
-
-### Local Installation
-
-> **Prerequisites:
->
-> - [Node.js](https://nodejs.org/) v20+
-> - [PostgreSQL](https://www.postgresql.org/) v15+
-> - [pnpm](https://pnpm.io/) v10+
-
-1. Clone the repository and install dependencies:
+## Quick start
 
 ```bash
-git clone https://github.com/medusajs/dtc-starter.git
-cd dtc-starter
+# 1. Clone and install
+git clone <repo-url> machxi-ecommerce-cms-starter
+cd machxi-ecommerce-cms-starter
 pnpm install
-```
 
-2. Set up environment variables for the backend:
+# 2. Copy env templates (root .env is auto-created by docker:dev if missing)
+cp apps/backend/.env.template     apps/backend/.env
+cp apps/storefront/.env.template  apps/storefront/.env.local
 
-```bash
-cp apps/backend/.env.template apps/backend/.env
-```
+# 3. Start local infra (Postgres x2, MinIO + bucket init)
+pnpm docker:dev
 
-3. Set the database URL in `apps/backend.env`:
+# 4. Migrate Medusa + create an admin user
+pnpm --filter @machxi/backend exec medusa db:migrate
+pnpm --filter @machxi/backend exec medusa user -e admin@example.com -p supersecret
 
-```bash
-# Replace with actual database URL, make sure the database exists.
-DATABASE_URL=postgres://postgres:@localhost:5432/medusa-dtc-starter
-```
-
-4. Run migrations:
-
-```bash
-cd apps/backend
-pnpm medusa db:migrate
-```
-
-5. Add admin user:
-
-```bash
-cd apps/backend
-pnpm medusa user -e admin@test.com -p supersecret
-```
-
-6. Start Medusa backend:
-
-```bash
-cd apps/backend
+# 5. Run both apps
 pnpm dev
 ```
 
-7. Open the admin dashboard at `localhost:9000/app` and log in. Retrieve your publishable API key at Settings > Publishable API key.
+Then, **one manual step** before the storefront can call the API:
 
-8. Set up environment variables for the storefront:
+1. Open **http://localhost:9000/app** and log in with the user you just created.
+2. Go to **Settings → Publishable API Keys**, create or copy a key.
+3. Paste it into `apps/storefront/.env.local` as
+   `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_...` and restart the storefront.
 
-```bash
-cp apps/storefront/.env.template apps/storefront/.env.local
-```
+Storefront is now live at **http://localhost:8000**.
 
-9. Update `apps/storefront/.env.local` with your Medusa publishable API key:
+## What's running
 
-```bash
-NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_6c3...
-```
+| Service        | URL                              | Notes                                       |
+| -------------- | -------------------------------- | ------------------------------------------- |
+| Storefront     | http://localhost:8000            | Next.js                                     |
+| Payload Admin  | http://localhost:8000/admin      | Embedded in storefront                      |
+| Medusa API     | http://localhost:9000            | REST                                        |
+| Medusa Admin   | http://localhost:9000/app        | Use admin credentials from step 4           |
+| Postgres       | localhost:5432                   | Two databases: `medusa`, `payload`          |
+| MinIO API      | http://localhost:9100            | S3-compatible endpoint                      |
+| MinIO Console  | http://localhost:9101            | `minioadmin` / `minioadmin`                 |
 
-10.  Start storefront:
+## Daily workflow
 
-```bash
-cd apps/storefront
-pnpm dev
-```
-
-The storefront runs on `http://localhost:8000`.
-
-You can slo run the following command from the root to start both backend and storefront:
-
-```bash
-pnpm dev
-```
+| Command                                     | What it does                                   |
+| ------------------------------------------- | ---------------------------------------------- |
+| `pnpm dev`                                  | Run both apps concurrently                     |
+| `pnpm backend:dev`                          | Just the Medusa backend                        |
+| `pnpm storefront:dev`                       | Just the Next.js storefront                    |
+| `pnpm docker:dev`                           | Bring up Postgres + MinIO                      |
+| `pnpm build` / `pnpm lint` / `pnpm test`    | Across the whole monorepo via Turborepo        |
+| `pnpm setup:mcp`                            | Verify Claude Code MCP servers                 |
+| `pnpm --filter @machxi/backend exec medusa <cmd>` | Run any Medusa CLI command from repo root |
 
 ## Configuration
 
-The storefront is configured via environment variables in `apps/storefront/.env.local`:
+Every env var is documented inline in its template — there is no canonical list
+to keep in sync here. Templates:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` | Publishable API key from your Medusa backend | — |
-| `NEXT_PUBLIC_MEDUSA_BACKEND_URL` | URL of your Medusa backend | `http://localhost:9000` |
-| `NEXT_PUBLIC_DEFAULT_REGION` | Default region country code | `dk` |
-| `NEXT_PUBLIC_BASE_URL` | Base URL of the storefront | `https://localhost:8000` |
-| `NEXT_PUBLIC_STRIPE_KEY` | Stripe publishable key (optional) | — |
+- **`.env.template`** (repo root) — Docker compose (Postgres, MinIO) + optional
+  GitHub MCP token
+- **`apps/backend/.env.template`** — Medusa secrets, `DATABASE_URL`, CORS, S3
+  pointing at MinIO
+- **`apps/storefront/.env.template`** — Medusa publishable key,
+  `PAYLOAD_DATABASE_URL`, `PAYLOAD_SECRET`, Payload S3, optional Payload MCP key
 
-## AI tooling
+Copy each template to its working file (`.env`, `.env`, `.env.local`
+respectively — all gitignored) and edit as needed. The defaults in the
+templates already match the docker-compose stack — most teams won't need to
+touch DB URLs locally.
 
-This repo ships with a checked-in `.mcp.json` that wires up five Model Context
-Protocol servers for Claude Code (live docs, browser automation, both
-Postgres databases, and the Payload CMS plugin). See
-[`docs/MCP.md`](docs/MCP.md) for setup and usage.
+## AI tooling (Claude Code)
 
-## Resources
+This repo ships with `.mcp.json`, `.claude/settings.json`, and curated agents,
+skills, and hooks under `.claude/`. On first run in this directory, [Claude
+Code](https://claude.com/claude-code) will prompt you to:
 
-- [Medusa Documentation](https://docs.medusajs.com)
-- [Medusa Cloud](https://cloud.medusajs.com)
+1. Trust the three plugin marketplaces declared in `.claude/settings.json`
+   (`medusa`, `payload-marketplace`, `claude-code-workflows`).
+2. Install the 20 enabled plugins.
+3. Approve the six MCP servers from `.mcp.json` (context7, chrome-devtools,
+   postgres-medusa, postgres-payload, payload, github).
+
+Verify with:
+
+```bash
+pnpm setup:mcp
+```
+
+Full setup, troubleshooting, and per-server usage are in [`docs/MCP.md`](docs/MCP.md).
+
+## Repository layout
+
+```
+apps/
+  backend/         Medusa v2 — REST API + admin dashboard
+  storefront/      Next.js 15 + PayloadCMS v3
+docker/            Postgres init scripts, MinIO bucket setup
+docs/              MCP setup, architecture notes
+scripts/
+  docker-dev.mjs   Bootstrap local infra (called by pnpm docker:dev)
+  setup-mcp.mjs    MCP verification report (pnpm setup:mcp)
+  mcp/             Thin wrappers that launch each MCP server from .env
+.claude/           Hooks, agents, skills, settings (team-shared)
+.mcp.json          MCP server registry
+```
+
+## Documentation
+
+- [`docs/MCP.md`](docs/MCP.md) — MCP servers, setup, and troubleshooting
+- [`CLAUDE.md`](CLAUDE.md) — Project context for AI agents (root)
+- [`apps/backend/CLAUDE.md`](apps/backend/CLAUDE.md) — Medusa v2 conventions
+- [`apps/storefront/AGENTS.md`](apps/storefront/AGENTS.md) — Next.js + Payload conventions
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).

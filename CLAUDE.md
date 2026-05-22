@@ -4,8 +4,8 @@ Turborepo + pnpm monorepo. Two apps, two PostgreSQL databases, shared config.
 
 ## Monorepo structure
 
-- `apps/backend/`   — Medusa v2 backend (@dtc/backend). REST API, admin UI.
-- `apps/storefront/` — Next.js 15 + PayloadCMS v3 storefront (@dtc/storefront).
+- `apps/backend/`   — Medusa v2 backend (@machxi/backend). REST API, admin UI.
+- `apps/storefront/` — Next.js 15 + PayloadCMS v3 storefront (@machxi/storefront).
 - `scripts/`        — MCP bootstrap scripts (postgres.mjs, payload.mjs).
 - `docker/`         — Docker compose for local DB and services.
 
