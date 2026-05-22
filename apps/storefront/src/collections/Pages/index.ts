@@ -1,5 +1,6 @@
 import type { CollectionConfig } from "payload"
 import { slugField } from "payload"
+import { createBreadcrumbsField } from "@payloadcms/plugin-nested-docs"
 
 import {
   MetaDescriptionField,
@@ -34,6 +35,7 @@ export const Pages: CollectionConfig<"pages"> = {
     breadcrumbs: true,
   },
   admin: {
+    group: "Content",
     defaultColumns: ["title", "slug", "updatedAt"],
     livePreview: {
       url: ({ data, req }) =>
@@ -88,6 +90,20 @@ export const Pages: CollectionConfig<"pages"> = {
               hasGenerateFn: true,
               titlePath: "meta.title",
               descriptionPath: "meta.description",
+            }),
+          ],
+        },
+        {
+          label: "Advanced",
+          fields: [
+            // Pre-declared so nestedDocsPlugin places the auto-generated
+            // breadcrumbs here instead of pushing a duplicate field after the
+            // tabs (which would render under every tab).
+            createBreadcrumbsField("pages", {
+              admin: {
+                description:
+                  "Auto-generated URL chain from the parent hierarchy. Updates on save.",
+              },
             }),
           ],
         },

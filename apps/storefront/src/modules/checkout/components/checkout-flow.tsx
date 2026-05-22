@@ -17,7 +17,6 @@ type CheckoutFlowProps = {
   customer: HttpTypes.StoreCustomer | null
   shippingMethods: HttpTypes.StoreCartShippingOption[]
   paymentProviders: HttpTypes.StorePaymentProvider[]
-  countryCode: string
   initialStep: CheckoutStep
 }
 
@@ -26,7 +25,6 @@ export function CheckoutFlow({
   customer,
   shippingMethods,
   paymentProviders,
-  countryCode,
   initialStep,
 }: CheckoutFlowProps) {
   const nav = useCheckoutNavigation(initialStep)
@@ -59,7 +57,6 @@ export function CheckoutFlow({
       <AddressStep
         cart={cart}
         customer={customer}
-        countryCode={countryCode}
         state={stateOf("address")}
         onEdit={() => nav.goTo("address", { scroll: true })}
         onCompleted={() => handleCompleted("address")}

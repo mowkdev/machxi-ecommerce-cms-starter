@@ -30,7 +30,6 @@ type Country = {
 type AddressStepProps = {
   cart: HttpTypes.StoreCart
   customer: HttpTypes.StoreCustomer | null
-  countryCode: string
   state: StepState
   onEdit: () => void
   onCompleted: () => void
@@ -53,13 +52,15 @@ export function AddressStep(props: AddressStepProps) {
 function buildDefaults({
   cart,
   customer,
-  countryCode,
 }: {
   cart: HttpTypes.StoreCart
   customer: HttpTypes.StoreCustomer | null
-  countryCode: string
 }): AddressFormValues {
   const ship = cart.shipping_address
+  // Fall back to the first country in the cart's region — the region was
+  // already chosen by the user (cookie-set in middleware), so any of its
+  // countries is a sane default.
+  const regionCountry = cart.region?.countries?.[0]?.iso_2 ?? ""
   return {
     email: cart.email ?? customer?.email ?? "",
     first_name: ship?.first_name ?? customer?.first_name ?? "",
@@ -69,24 +70,19 @@ function buildDefaults({
     postal_code: ship?.postal_code ?? "",
     city: ship?.city ?? "",
     province: ship?.province ?? "",
-    country_code: ship?.country_code ?? countryCode.toLowerCase(),
+    country_code: ship?.country_code ?? regionCountry,
     phone: ship?.phone ?? customer?.phone ?? "",
     same_as_billing: true,
   }
 }
 
-function AddressActive({
-  cart,
-  customer,
-  countryCode,
-  onCompleted,
-}: AddressStepProps) {
+function AddressActive({ cart, customer, onCompleted }: AddressStepProps) {
   const [pending, startTransition] = useTransition()
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const form = useForm<AddressFormValues>({
     resolver: zodResolver(addressSchema),
-    defaultValues: buildDefaults({ cart, customer, countryCode }),
+    defaultValues: buildDefaults({ cart, customer }),
     mode: "onBlur",
   })
 

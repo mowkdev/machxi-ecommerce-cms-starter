@@ -46,6 +46,7 @@ export const Products: CollectionConfig = {
   admin: {
     useAsTitle: "title",
     defaultColumns: ["title", "handle", "medusa_id", "updatedAt"],
+    group: "Ecommerce",
   },
   access: {
     create: isAdminOrApiKey,

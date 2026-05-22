@@ -101,7 +101,7 @@ export async function ShopTemplate({
 
   // Out-of-range page: redirect to canonical page 1 instead of 404'ing.
   if (page > totalPages && count > 0) {
-    redirect(buildShopHref({ countryCode, handle, sort }))
+    redirect(buildShopHref({ handle, sort }))
   }
 
   const title = activeCategory?.name ?? "All products"
@@ -225,7 +225,6 @@ export async function ShopTemplate({
           )}
 
           <Pager
-            countryCode={countryCode}
             handle={handle}
             currentPage={page}
             totalPages={totalPages}

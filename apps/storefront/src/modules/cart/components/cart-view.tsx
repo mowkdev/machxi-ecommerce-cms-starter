@@ -10,10 +10,8 @@ import { useCart } from "@/modules/cart/components/cart-provider"
 import { formatPrice } from "@/lib/prices"
 
 export function CartView({
-  countryCode,
   customerEmail,
 }: {
-  countryCode: string
   customerEmail: string | null
 }) {
   const router = useRouter()
@@ -57,7 +55,7 @@ export function CartView({
     )
   }
 
-  const goToCheckout = () => router.push(`/${countryCode}/checkout`)
+  const goToCheckout = () => router.push("/checkout")
   const promoCodes = (cart?.promotions ?? []).map((p) => p.code ?? "")
 
   return (

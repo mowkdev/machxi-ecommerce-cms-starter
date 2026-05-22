@@ -17,33 +17,36 @@ type CMSLinkProps = {
   appearance?: "default" | "outline" | "link" | null
   children?: React.ReactNode
   className?: string
-  countryCode?: string
   size?: ComponentProps<typeof Button>["size"]
 }
-
-const DEFAULT_COUNTRY = process.env.NEXT_PUBLIC_DEFAULT_COUNTRY_CODE || "us"
 
 function buildHref({
   type,
   reference,
   url,
-  countryCode,
-}: Pick<CMSLinkProps, "type" | "reference" | "url" | "countryCode">) {
-  const cc = countryCode || DEFAULT_COUNTRY
-
+}: Pick<CMSLinkProps, "type" | "reference" | "url">) {
   if (type === "custom" && url) {
-    if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("mailto:")) {
+    if (
+      url.startsWith("http://") ||
+      url.startsWith("https://") ||
+      url.startsWith("mailto:")
+    ) {
       return url
     }
-    return `/${cc}${url.startsWith("/") ? url : `/${url}`}`
+    return url.startsWith("/") ? url : `/${url}`
   }
 
-  if (type === "reference" && reference && typeof reference.value === "object") {
+  if (
+    type === "reference" &&
+    reference &&
+    typeof reference.value === "object"
+  ) {
     const breadcrumbs = reference.value.breadcrumbs
     const last = breadcrumbs?.[breadcrumbs.length - 1]
-    const refUrl = last?.url || (reference.value.slug ? `/${reference.value.slug}` : "")
-    if (!refUrl) return `/${cc}`
-    return `/${cc}${refUrl.startsWith("/") ? refUrl : `/${refUrl}`}`
+    const refUrl =
+      last?.url || (reference.value.slug ? `/${reference.value.slug}` : "")
+    if (!refUrl) return "/"
+    return refUrl.startsWith("/") ? refUrl : `/${refUrl}`
   }
 
   return null
@@ -58,10 +61,9 @@ export function CMSLink({
   appearance,
   children,
   className,
-  countryCode,
   size,
 }: CMSLinkProps) {
-  const href = buildHref({ type, reference, url, countryCode })
+  const href = buildHref({ type, reference, url })
   if (!href) return null
 
   const target = newTab ? "_blank" : undefined

@@ -25,7 +25,6 @@ type CartContextValue = {
   itemCount: number
   subtotal: string
   currencyCode: string
-  countryCode: string
   addItem: (variantId: string, quantity: number) => Promise<void>
   updateItem: (lineItemId: string, quantity: number) => Promise<void>
   removeItem: (lineItemId: string) => Promise<void>
@@ -37,11 +36,9 @@ const CartContext = createContext<CartContextValue | null>(null)
 export function CartProvider({
   children,
   initialCart,
-  countryCode,
 }: {
   children: React.ReactNode
   initialCart: HttpTypes.StoreCart | null
-  countryCode: string
 }) {
   const [cart, setCart] = useState<HttpTypes.StoreCart | null>(initialCart)
   const [adding, setAdding] = useState(false)
@@ -56,13 +53,13 @@ export function CartProvider({
     async (variantId: string, quantity: number) => {
       setAdding(true)
       try {
-        await addToCartAction({ variantId, quantity, countryCode })
+        await addToCartAction({ variantId, quantity })
         await refreshCart()
       } finally {
         setAdding(false)
       }
     },
-    [countryCode, refreshCart]
+    [refreshCart]
   )
 
   const updateItem = useCallback(
@@ -127,7 +124,6 @@ export function CartProvider({
       itemCount,
       subtotal,
       currencyCode,
-      countryCode,
       addItem,
       updateItem,
       removeItem,
@@ -139,7 +135,6 @@ export function CartProvider({
       itemCount,
       subtotal,
       currencyCode,
-      countryCode,
       addItem,
       updateItem,
       removeItem,

@@ -13,13 +13,13 @@ const items = [
   { href: "/account/orders", label: "Orders" },
 ]
 
-export function AccountNav({ countryCode }: { countryCode: string }) {
+export function AccountNav() {
   const pathname = usePathname()
   const [pending, startTransition] = useTransition()
 
   const handleSignOut = () => {
     startTransition(async () => {
-      await signout(countryCode)
+      await signout()
     })
   }
 
@@ -28,10 +28,9 @@ export function AccountNav({ countryCode }: { countryCode: string }) {
       <span className="eb">Account</span>
       <nav aria-label="Account">
         {items.map((item) => {
-          const fullHref = `/${countryCode}${item.href}`
           const active =
-            pathname === fullHref ||
-            (item.href !== "/account" && pathname.startsWith(`${fullHref}/`))
+            pathname === item.href ||
+            (item.href !== "/account" && pathname.startsWith(`${item.href}/`))
           return (
             <LocalizedLink
               key={item.href}

@@ -125,13 +125,13 @@ export async function signup(
   }
 }
 
-export async function signout(countryCode: string) {
+export async function signout() {
   await sdk.auth.logout()
   await removeAuthToken()
   revalidateTag(await getCacheTag("customers"))
   await removeCartId()
   revalidateTag(await getCacheTag("carts"))
-  redirect(`/${countryCode}/account`)
+  redirect("/account")
 }
 
 export const addCustomerAddress = async (

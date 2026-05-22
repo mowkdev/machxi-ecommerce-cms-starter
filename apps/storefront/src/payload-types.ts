@@ -279,13 +279,9 @@ export interface Page {
     image?: (number | null) | Media;
     description?: string | null;
   };
-  publishedAt?: string | null;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   * Auto-generated URL chain from the parent hierarchy. Updates on save.
    */
-  generateSlug?: boolean | null;
-  slug: string;
-  parent?: (number | null) | Page;
   breadcrumbs?:
     | {
         doc?: (number | null) | Page;
@@ -294,6 +290,13 @@ export interface Page {
         id?: string | null;
       }[]
     | null;
+  publishedAt?: string | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  parent?: (number | null) | Page;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -838,10 +841,6 @@ export interface PagesSelect<T extends boolean = true> {
         image?: T;
         description?: T;
       };
-  publishedAt?: T;
-  generateSlug?: T;
-  slug?: T;
-  parent?: T;
   breadcrumbs?:
     | T
     | {
@@ -850,6 +849,10 @@ export interface PagesSelect<T extends boolean = true> {
         label?: T;
         id?: T;
       };
+  publishedAt?: T;
+  generateSlug?: T;
+  slug?: T;
+  parent?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

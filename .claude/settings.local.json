@@ -43,14 +43,17 @@
       "Bash(curl -s -i -X POST https://docs.medusajs.com/mcp -H \"Content-Type: application/json\" -H \"Accept: application/json, text/event-stream\" -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"diag\",\"version\":\"0\"}}}')",
       "Bash(curl -s -i http://localhost:8000/api/mcp)",
       "Bash(curl -s -o /dev/null -w \"storefront root: %{http_code}\\\\n\" http://localhost:8000/)",
-      "Bash(curl -s https://docs.medusajs.com/.well-known/oauth-protected-resource)"
+      "Bash(curl -s https://docs.medusajs.com/.well-known/oauth-protected-resource)",
+      "PowerShell(Get-ChildItem -Path 'apps/storefront/src/app/\\(storefront\\)/[[]countryCode[]]/\\([main\\)' -ErrorAction SilentlyContinue; \\(Get-Item 'apps/storefront/src/app/\\(storefront\\)/[[]countryCode[]]'\\).FullName)"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "context7",
     "chrome-devtools",
     "postgres-medusa",
     "postgres-payload",
-    "payload"
+    "payload",
+    "github"
   ]
 }

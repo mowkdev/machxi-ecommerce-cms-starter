@@ -19,7 +19,7 @@ import { Input } from "@/modules/common/ui/input"
 import { signup } from "@/lib/data/customer"
 import { signUpSchema, type SignUpValues } from "@/lib/auth-schemas"
 
-export function SignUpForm({ countryCode }: { countryCode: string }) {
+export function SignUpForm() {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -51,7 +51,7 @@ export function SignUpForm({ countryCode }: { countryCode: string }) {
         setError(humanize(result))
         return
       }
-      router.push(`/${countryCode}/account`)
+      router.push("/account")
       router.refresh()
     })
   }

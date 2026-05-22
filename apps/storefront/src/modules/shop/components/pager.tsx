@@ -30,13 +30,11 @@ function pageWindow(current: number, total: number): (number | "…")[] {
 }
 
 export function Pager({
-  countryCode,
   handle,
   currentPage,
   totalPages,
   sort,
 }: {
-  countryCode: string
   handle: string
   currentPage: number
   totalPages: number
@@ -48,8 +46,7 @@ export function Pager({
   const next = currentPage < totalPages ? currentPage + 1 : null
   const window = pageWindow(currentPage, totalPages)
 
-  const hrefFor = (page: number) =>
-    buildShopHref({ countryCode, handle, page, sort })
+  const hrefFor = (page: number) => buildShopHref({ handle, page, sort })
 
   return (
     <nav className="pager" aria-label="Pagination">
@@ -57,7 +54,7 @@ export function Pager({
         <LocalizedLink
           className="nav-btn"
           aria-label="Previous page"
-          href={hrefFor(prev).replace(`/${countryCode}`, "")}
+          href={hrefFor(prev)}
         >
           <svg
             viewBox="0 0 16 16"
@@ -94,7 +91,7 @@ export function Pager({
         ) : (
           <LocalizedLink
             key={p}
-            href={hrefFor(p).replace(`/${countryCode}`, "")}
+            href={hrefFor(p)}
             className={cn(p === currentPage && "now")}
             aria-current={p === currentPage ? "page" : undefined}
           >
@@ -107,7 +104,7 @@ export function Pager({
         <LocalizedLink
           className="nav-btn"
           aria-label="Next page"
-          href={hrefFor(next).replace(`/${countryCode}`, "")}
+          href={hrefFor(next)}
         >
           <svg
             viewBox="0 0 16 16"

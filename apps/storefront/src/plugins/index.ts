@@ -25,6 +25,9 @@ export const plugins: Plugin[] = [
   redirectsPlugin({
     collections: ["pages"],
     overrides: {
+      admin: {
+        group: "Settings",
+      },
       fields: ({ defaultFields }: { defaultFields: Field[] }): Field[] => {
         return defaultFields.map((field) => {
           if ("name" in field && field.name === "from") {
@@ -45,6 +48,10 @@ export const plugins: Plugin[] = [
   }),
   nestedDocsPlugin({
     collections: ["pages"],
+    // We declare the `breadcrumbs` field ourselves inside the Pages collection's
+    // Advanced tab. Setting this slug skips the plugin's default top-level
+    // injection that would otherwise render below every tab.
+    breadcrumbsFieldSlug: "breadcrumbs",
     generateURL: (docs) =>
       docs.reduce((url, doc) => `${url}/${doc.slug}`, ""),
   }),

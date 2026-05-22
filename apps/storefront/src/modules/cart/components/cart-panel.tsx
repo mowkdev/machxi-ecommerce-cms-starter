@@ -70,7 +70,6 @@ function CartPanel() {
     itemCount,
     subtotal,
     currencyCode,
-    countryCode,
     updateItem,
     removeItem,
   } = useCart()
@@ -78,7 +77,7 @@ function CartPanel() {
   const items = cart?.items ?? []
   const goToCheckout = () => {
     close()
-    router.push(`/${countryCode}/cart`)
+    router.push("/cart")
   }
 
   return (

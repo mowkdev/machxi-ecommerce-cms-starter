@@ -49,21 +49,17 @@ export function orderForSort(sort: SortKey): string {
  * query string; page=1 is dropped from the path.
  */
 export function buildShopHref({
-  countryCode,
   handle,
   page = 1,
   sort,
 }: {
-  countryCode: string
   handle: string
   page?: number
   sort?: SortKey
 }): string {
   const safePage = Math.max(1, page)
   const path =
-    safePage === 1
-      ? `/${countryCode}/shop/${handle}`
-      : `/${countryCode}/shop/${handle}/page/${safePage}`
+    safePage === 1 ? `/shop/${handle}` : `/shop/${handle}/page/${safePage}`
   const q =
     sort && sort !== DEFAULT_SORT ? `?sort=${encodeURIComponent(sort)}` : ""
   return `${path}${q}`

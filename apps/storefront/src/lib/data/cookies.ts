@@ -95,3 +95,24 @@ export const removeCartId = async () => {
     maxAge: -1,
   })
 }
+
+export const COUNTRY_CODE_COOKIE_NAME = "_medusa_country_code"
+
+export const getCountryCode = async (): Promise<string | null> => {
+  try {
+    const cookies = await nextCookies()
+    return cookies.get(COUNTRY_CODE_COOKIE_NAME)?.value?.toLowerCase() ?? null
+  } catch {
+    return null
+  }
+}
+
+export const setCountryCode = async (countryCode: string) => {
+  const cookies = await nextCookies()
+  cookies.set(COUNTRY_CODE_COOKIE_NAME, countryCode.toLowerCase(), {
+    maxAge: 60 * 60 * 24 * 365,
+    httpOnly: false,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production",
+  })
+}

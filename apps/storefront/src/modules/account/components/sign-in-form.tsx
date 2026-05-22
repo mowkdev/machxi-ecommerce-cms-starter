@@ -20,7 +20,7 @@ import { Input } from "@/modules/common/ui/input"
 import { login } from "@/lib/data/customer"
 import { signInSchema, type SignInValues } from "@/lib/auth-schemas"
 
-export function SignInForm({ countryCode }: { countryCode: string }) {
+export function SignInForm() {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -42,7 +42,7 @@ export function SignInForm({ countryCode }: { countryCode: string }) {
         setError(humanize(result))
         return
       }
-      router.push(`/${countryCode}/account`)
+      router.push("/account")
       router.refresh()
     })
   }
@@ -90,10 +90,7 @@ export function SignInForm({ countryCode }: { countryCode: string }) {
               <FormItem>
                 <FormRow>
                   <FormLabel>Password</FormLabel>
-                  <Link
-                    href={`/${countryCode}/forgot-password`}
-                    className="link-mini"
-                  >
+                  <Link href="/forgot-password" className="link-mini">
                     Forgot?
                   </Link>
                 </FormRow>

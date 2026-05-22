@@ -24,11 +24,9 @@ import {
 export function ResetPasswordForm({
   email,
   token,
-  countryCode,
 }: {
   email: string
   token: string
-  countryCode: string
 }) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -52,7 +50,7 @@ export function ResetPasswordForm({
         setError(result.error ?? "Could not reset password")
         return
       }
-      router.push(`/${countryCode}/sign-in`)
+      router.push("/sign-in")
     })
   }
 

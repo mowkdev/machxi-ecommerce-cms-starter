@@ -3,12 +3,15 @@ import { Inter, Tenor_Sans } from "next/font/google"
 
 import "@/styles/globals.css"
 
+import { CartUiProvider } from "@/modules/cart/components/cart-panel"
+import { CartProvider } from "@/modules/cart/components/cart-provider"
 import { MobileMenuProvider } from "@/modules/layout/components/mobile-menu"
 import { ThemeProvider } from "@/modules/layout/components/theme-provider"
 import { themeNoFlashScript } from "@/modules/layout/components/theme-no-flash-script"
 import { SmoothScrollProvider } from "@/modules/layout/components/smooth-scroll"
 import { ToastProvider } from "@/modules/common/ui/toast"
 import { siteConfig } from "@/config/site"
+import { retrieveCart } from "@/lib/data/cart"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,11 +32,13 @@ export const metadata: Metadata = {
   description: siteConfig.description,
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const cart = await retrieveCart().catch(() => null)
+
   return (
     <html
       lang="en"
@@ -62,7 +67,11 @@ export default function RootLayout({
         <ThemeProvider>
           <ToastProvider>
             <MobileMenuProvider>
-              <SmoothScrollProvider>{children}</SmoothScrollProvider>
+              <CartProvider initialCart={cart}>
+                <CartUiProvider>
+                  <SmoothScrollProvider>{children}</SmoothScrollProvider>
+                </CartUiProvider>
+              </CartProvider>
             </MobileMenuProvider>
           </ToastProvider>
         </ThemeProvider>
