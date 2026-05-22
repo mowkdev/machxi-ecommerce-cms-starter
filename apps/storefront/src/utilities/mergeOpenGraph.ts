@@ -1,0 +1,23 @@
+import type { Metadata } from "next"
+
+import { getServerSideURL } from "./getURL"
+
+const defaultOpenGraph: Metadata["openGraph"] = {
+  type: "website",
+  description: "An ecommerce storefront powered by Medusa and Payload CMS.",
+  images: [
+    {
+      url: `${getServerSideURL()}/og-image.png`,
+    },
+  ],
+  siteName: "MachXI",
+  title: "MachXI",
+}
+
+export const mergeOpenGraph = (og?: Metadata["openGraph"]): Metadata["openGraph"] => {
+  return {
+    ...defaultOpenGraph,
+    ...og,
+    images: og?.images ? og.images : defaultOpenGraph.images,
+  }
+}

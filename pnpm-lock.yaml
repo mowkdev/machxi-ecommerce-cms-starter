@@ -127,12 +127,24 @@ importers:
       '@payloadcms/db-postgres':
         specifier: ^3.84.1
         version: 3.84.1(@opentelemetry/api@1.9.0)(knex@3.2.8(pg@8.20.0))(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))
+      '@payloadcms/live-preview-react':
+        specifier: ^3.84.1
+        version: 3.84.1(react-dom@19.0.5(react@19.0.5))(react@19.0.5)
       '@payloadcms/next':
         specifier: ^3.84.1
         version: 3.84.1(@types/react@19.0.5)(graphql@16.12.0)(monaco-editor@0.55.1)(next@16.2.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(sass@1.77.4))(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(typescript@5.9.3)
       '@payloadcms/plugin-mcp':
         specifier: ^3.84.1
         version: 3.84.1(next@16.2.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(sass@1.77.4))(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))
+      '@payloadcms/plugin-nested-docs':
+        specifier: ^3.84.1
+        version: 3.84.1(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))
+      '@payloadcms/plugin-redirects':
+        specifier: ^3.84.1
+        version: 3.84.1(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))
+      '@payloadcms/plugin-seo':
+        specifier: ^3.84.1
+        version: 3.84.1(@types/react@19.0.5)(monaco-editor@0.55.1)(next@16.2.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(sass@1.77.4))(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(typescript@5.9.3)
       '@payloadcms/richtext-lexical':
         specifier: ^3.84.1
         version: 3.84.1(@faceless-ui/modal@3.0.0(react-dom@19.0.5(react@19.0.5))(react@19.0.5))(@faceless-ui/scroll-info@2.0.0(react-dom@19.0.5(react@19.0.5))(react@19.0.5))(@payloadcms/next@3.84.1(@types/react@19.0.5)(graphql@16.12.0)(monaco-editor@0.55.1)(next@16.2.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(sass@1.77.4))(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(typescript@5.9.3))(@types/react@19.0.5)(monaco-editor@0.55.1)(next@16.2.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(sass@1.77.4))(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(typescript@5.9.3)(yjs@13.6.30)
@@ -1409,14 +1421,8 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@floating-ui/core@1.7.3':
-    resolution: {integrity: sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w==}
-
   '@floating-ui/core@1.7.5':
     resolution: {integrity: sha512-1Ih4WTWyw0+lKyFMcBHGbb5U5FtuHJuujoyyr5zTaWS5EYMeT6Jb2AuDeftsCsEuchO+mM2ij5+q9crhydzLhQ==}
-
-  '@floating-ui/dom@1.7.4':
-    resolution: {integrity: sha512-OOchDgh4F2CchOX94cRVqhvy7b3AFb+/rQXyswmzmGakRfkMgoWVjfnLWkRirfLEfuD4ysVW16eXzwt3jHIzKA==}
 
   '@floating-ui/dom@1.7.6':
     resolution: {integrity: sha512-9gZSAI5XM36880PPMm//9dfiEngYoC6Am2izES1FF406YFsjvyBMmeJ2g4SAju3xWwtuynNRFL2s9hgxpLI5SQ==}
@@ -1438,9 +1444,6 @@ packages:
     peerDependencies:
       react: '>=17.0.0'
       react-dom: '>=17.0.0'
-
-  '@floating-ui/utils@0.2.10':
-    resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
@@ -2983,6 +2986,15 @@ packages:
       graphql: ^16.8.1
       payload: 3.84.1
 
+  '@payloadcms/live-preview-react@3.84.1':
+    resolution: {integrity: sha512-jKG1llQh0QMwltSaZJ0fDzxj8bdllboQYBlJnv2kYs1HW4ZgIRbVtvtcvOEInooi9yUManjzr/r5GOxTNsLryg==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.1 || ^19.1.2 || ^19.2.1
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.1 || ^19.1.2 || ^19.2.1
+
+  '@payloadcms/live-preview@3.84.1':
+    resolution: {integrity: sha512-FiimjzLX/nBCXa00EOTm+U1I7PufcNItB023I9eu7ZpxiDNulg6kSBT9A37LJif5C9napaePu4l5vXB/5qSGYg==}
+
   '@payloadcms/next@3.84.1':
     resolution: {integrity: sha512-T7f7Ja4l4Z6QM/oSM8MWJY63xyNQmWxUswDgssXl1/D0hQIVQASXMeZvXiXLQwg/g4f9s5anKTUNIx32dtHxWg==}
     engines: {node: ^18.20.2 || >=20.9.0}
@@ -3002,6 +3014,23 @@ packages:
     resolution: {integrity: sha512-FBeosiEbVyhR/I8fjIsgwj13tIJrx2ZVeaCgiAB5AUOiGMaVorUTXG9kSQ/OM4agX5IvxbILLcFhDUnK2vHOJQ==}
     peerDependencies:
       payload: 3.84.1
+
+  '@payloadcms/plugin-nested-docs@3.84.1':
+    resolution: {integrity: sha512-5UuyTkzuc/ALC9oPz8dGQkQ/eOF/HrxKVi88YnKsBHnG4mCWTRxXVMYXjuIb8pH8UFhZpQgphuQqDljw9ZcOqA==}
+    peerDependencies:
+      payload: 3.84.1
+
+  '@payloadcms/plugin-redirects@3.84.1':
+    resolution: {integrity: sha512-izKKI5Mm6nosetsAxlqbdOKxraYPlHSGy246D4YbsDemAV4CLOpGcQKTaeTW/JAqYt+RlcvzcWXm0qNMX+2MeQ==}
+    peerDependencies:
+      payload: 3.84.1
+
+  '@payloadcms/plugin-seo@3.84.1':
+    resolution: {integrity: sha512-9FYs5ML/eWR/A/rQfHt2NhPzkJWbUx5SN/+lEQ90r3c3Z8CQUVpt4vETXSI9Gxi764lTutIGemuZAJK9WRy3Lw==}
+    peerDependencies:
+      payload: 3.84.1
+      react: ^19.0.1 || ^19.1.2 || ^19.2.1
+      react-dom: ^19.0.1 || ^19.1.2 || ^19.2.1
 
   '@payloadcms/richtext-lexical@3.84.1':
     resolution: {integrity: sha512-KaNSz0RJFLnLc/hBRGg8Lgwk5FjCZSskA6KuufNWG5QdgUsgQe4Dx4Vr7G+VSR9zSZj+R4TVVSC0aVv4z7vL3g==}
@@ -10343,7 +10372,7 @@ snapshots:
   '@ariakit/react-core@0.4.20(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@ariakit/core': 0.4.17
-      '@floating-ui/dom': 1.7.4
+      '@floating-ui/dom': 1.7.6
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       use-sync-external-store: 1.6.0(react@18.3.1)
@@ -11681,35 +11710,26 @@ snapshots:
       react: 19.0.5
       react-dom: 19.0.5(react@19.0.5)
 
-  '@floating-ui/core@1.7.3':
-    dependencies:
-      '@floating-ui/utils': 0.2.10
-
   '@floating-ui/core@1.7.5':
     dependencies:
       '@floating-ui/utils': 0.2.11
-
-  '@floating-ui/dom@1.7.4':
-    dependencies:
-      '@floating-ui/core': 1.7.3
-      '@floating-ui/utils': 0.2.10
 
   '@floating-ui/dom@1.7.6':
     dependencies:
       '@floating-ui/core': 1.7.5
       '@floating-ui/utils': 0.2.11
 
-  '@floating-ui/react-dom@2.1.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
-    dependencies:
-      '@floating-ui/dom': 1.7.4
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-
   '@floating-ui/react-dom@2.1.6(react-dom@19.0.5(react@19.0.5))(react@19.0.5)':
     dependencies:
-      '@floating-ui/dom': 1.7.4
+      '@floating-ui/dom': 1.7.6
       react: 19.0.5
       react-dom: 19.0.5(react@19.0.5)
+
+  '@floating-ui/react-dom@2.1.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@floating-ui/dom': 1.7.6
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   '@floating-ui/react-dom@2.1.8(react-dom@19.0.5(react@19.0.5))(react@19.0.5)':
     dependencies:
@@ -11724,8 +11744,6 @@ snapshots:
       react: 19.0.5
       react-dom: 19.0.5(react@19.0.5)
       tabbable: 6.4.0
-
-  '@floating-ui/utils@0.2.10': {}
 
   '@floating-ui/utils@0.2.11': {}
 
@@ -14003,6 +14021,14 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
+  '@payloadcms/live-preview-react@3.84.1(react-dom@19.0.5(react@19.0.5))(react@19.0.5)':
+    dependencies:
+      '@payloadcms/live-preview': 3.84.1
+      react: 19.0.5
+      react-dom: 19.0.5(react@19.0.5)
+
+  '@payloadcms/live-preview@3.84.1': {}
+
   '@payloadcms/next@3.84.1(@types/react@19.0.5)(graphql@16.12.0)(monaco-editor@0.55.1)(next@16.2.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(sass@1.77.4))(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(typescript@5.9.3)':
     dependencies:
       '@dnd-kit/core': 6.3.1(react-dom@19.0.5(react@19.0.5))(react@19.0.5)
@@ -14059,6 +14085,29 @@ snapshots:
       - '@cfworker/json-schema'
       - next
       - supports-color
+
+  '@payloadcms/plugin-nested-docs@3.84.1(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))':
+    dependencies:
+      payload: 3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3)
+
+  '@payloadcms/plugin-redirects@3.84.1(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))':
+    dependencies:
+      '@payloadcms/translations': 3.84.1
+      payload: 3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3)
+
+  '@payloadcms/plugin-seo@3.84.1(@types/react@19.0.5)(monaco-editor@0.55.1)(next@16.2.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(sass@1.77.4))(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(typescript@5.9.3)':
+    dependencies:
+      '@payloadcms/translations': 3.84.1
+      '@payloadcms/ui': 3.84.1(@types/react@19.0.5)(monaco-editor@0.55.1)(next@16.2.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(sass@1.77.4))(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(typescript@5.9.3)
+      payload: 3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3)
+      react: 19.0.5
+      react-dom: 19.0.5(react@19.0.5)
+    transitivePeerDependencies:
+      - '@types/react'
+      - monaco-editor
+      - next
+      - supports-color
+      - typescript
 
   '@payloadcms/richtext-lexical@3.84.1(@faceless-ui/modal@3.0.0(react-dom@19.0.5(react@19.0.5))(react@19.0.5))(@faceless-ui/scroll-info@2.0.0(react-dom@19.0.5(react@19.0.5))(react@19.0.5))(@payloadcms/next@3.84.1(@types/react@19.0.5)(graphql@16.12.0)(monaco-editor@0.55.1)(next@16.2.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(sass@1.77.4))(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(typescript@5.9.3))(@types/react@19.0.5)(monaco-editor@0.55.1)(next@16.2.6(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(sass@1.77.4))(payload@3.84.1(patch_hash=a2892c66de44240f69fde8e059abdf8cebcb7a756931b712756aa423d7a6e3fe)(graphql@16.12.0)(typescript@5.9.3))(react-dom@19.0.5(react@19.0.5))(react@19.0.5)(typescript@5.9.3)(yjs@13.6.30)':
     dependencies:
@@ -14754,7 +14803,7 @@ snapshots:
 
   '@radix-ui/react-popper@1.2.1(@types/react-dom@19.0.5(@types/react@19.0.5))(@types/react@19.0.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@floating-ui/react-dom': 2.1.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@floating-ui/react-dom': 2.1.8(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-arrow': 1.1.1(@types/react-dom@19.0.5(@types/react@19.0.5))(@types/react@19.0.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-compose-refs': 1.1.1(@types/react@19.0.5)(react@18.3.1)
       '@radix-ui/react-context': 1.1.1(@types/react@19.0.5)(react@18.3.1)
@@ -18560,8 +18609,8 @@ snapshots:
       '@next/eslint-plugin-next': 16.2.6
       eslint: 9.39.4(jiti@1.21.7)
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@1.21.7))
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@1.21.7))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.4(jiti@1.21.7))
       eslint-plugin-react: 7.37.5(eslint@9.39.4(jiti@1.21.7))
       eslint-plugin-react-hooks: 7.1.1(eslint@9.39.4(jiti@1.21.7))
@@ -18583,7 +18632,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@1.21.7)):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.3(supports-color@8.1.1)
@@ -18594,22 +18643,22 @@ snapshots:
       tinyglobby: 0.2.15
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@1.21.7))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7))
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@1.21.7)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
       eslint: 9.39.4(jiti@1.21.7)
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@1.21.7))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7))
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@1.21.7)):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7)):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -18620,7 +18669,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.4(jiti@1.21.7)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@1.21.7))
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.3(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7)))(eslint@9.39.4(jiti@1.21.7))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -21568,7 +21617,7 @@ snapshots:
       '@babel/runtime': 7.28.4
       '@emotion/cache': 11.14.0
       '@emotion/react': 11.14.0(@types/react@19.0.5)(react@19.0.5)
-      '@floating-ui/dom': 1.7.4
+      '@floating-ui/dom': 1.7.6
       '@types/react-transition-group': 4.4.12(@types/react@19.0.5)
       memoize-one: 6.0.0
       prop-types: 15.8.1

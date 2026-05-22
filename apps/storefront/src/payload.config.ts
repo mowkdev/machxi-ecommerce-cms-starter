@@ -1,13 +1,16 @@
 import path from "path"
 import { fileURLToPath } from "url"
 import sharp from "sharp"
-import { lexicalEditor } from "@payloadcms/richtext-lexical"
 import { postgresAdapter } from "@payloadcms/db-postgres"
 import { mcpPlugin } from "@payloadcms/plugin-mcp"
 import { s3Storage } from "@payloadcms/storage-s3"
 import { buildConfig } from "payload"
+
+import { defaultLexical } from "./fields/defaultLexical"
+import { plugins } from "./plugins"
 import { Users } from "./collections/Users"
 import { Media } from "./collections/Media"
+import { Pages } from "./collections/Pages"
 import { Products } from "./collections/Products"
 
 const filename = fileURLToPath(import.meta.url)
@@ -24,9 +27,18 @@ if (!payloadDatabaseUrl) {
 }
 
 export default buildConfig({
-  admin: { user: Users.slug },
-  collections: [Users, Media, Products],
-  editor: lexicalEditor(),
+  admin: {
+    user: Users.slug,
+    livePreview: {
+      breakpoints: [
+        { label: "Mobile", name: "mobile", width: 375, height: 667 },
+        { label: "Tablet", name: "tablet", width: 768, height: 1024 },
+        { label: "Desktop", name: "desktop", width: 1440, height: 900 },
+      ],
+    },
+  },
+  collections: [Users, Media, Pages, Products],
+  editor: defaultLexical,
   secret: payloadSecret,
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),
@@ -41,6 +53,7 @@ export default buildConfig({
     push: process.env.NODE_ENV !== "production",
   }),
   plugins: [
+    ...plugins,
     mcpPlugin({
       collections: {
         products: {

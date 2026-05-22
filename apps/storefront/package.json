@@ -7,15 +7,20 @@
     "build": "payload generate:importmap && next build",
     "start": "next start",
     "lint": "next lint",
-    "generate:importmap": "payload generate:importmap"
+    "generate:importmap": "payload generate:importmap",
+    "generate:types": "payload generate:types"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@medusajs/js-sdk": "^2.15.2",
     "@medusajs/types": "^2.15.2",
     "@payloadcms/db-postgres": "^3.84.1",
+    "@payloadcms/live-preview-react": "^3.84.1",
     "@payloadcms/next": "^3.84.1",
     "@payloadcms/plugin-mcp": "^3.84.1",
+    "@payloadcms/plugin-nested-docs": "^3.84.1",
+    "@payloadcms/plugin-redirects": "^3.84.1",
+    "@payloadcms/plugin-seo": "^3.84.1",
     "@payloadcms/richtext-lexical": "^3.84.1",
     "@payloadcms/storage-s3": "^3.84.1",
     "@radix-ui/react-checkbox": "^1.1.4",
