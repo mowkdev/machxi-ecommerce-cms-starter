@@ -6,6 +6,66 @@
     "ecommerce-storefront@medusa": true,
     "learn-medusa@medusa": true,
     "medusa-dev@medusa": true,
-    "payload@payload-marketplace": true
+    "payload@payload-marketplace": true,
+    "javascript-typescript@claude-code-workflows": true,
+    "comprehensive-review@claude-code-workflows": true,
+    "backend-development@claude-code-workflows": true,
+    "security-scanning@claude-code-workflows": true,
+    "full-stack-orchestration@claude-code-workflows": true,
+    "conductor@claude-code-workflows": true,
+    "agent-teams@claude-code-workflows": true,
+    "payment-processing@claude-code-workflows": true,
+    "database-design@claude-code-workflows": true,
+    "database-migrations@claude-code-workflows": true,
+    "unit-testing@claude-code-workflows": true,
+    "tdd-workflows@claude-code-workflows": true,
+    "application-performance@claude-code-workflows": true
+  },
+  "extraKnownMarketplaces": {
+    "medusa": {
+      "source": {
+        "source": "github",
+        "repo": "medusajs/medusa-agent-skills"
+      }
+    },
+    "payload-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "payloadcms/payload"
+      }
+    },
+    "claude-code-workflows": {
+      "source": {
+        "source": "github",
+        "repo": "wshobson/agents"
+      }
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/block-destructive.mjs",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/ts-check.mjs",
+            "timeout": 25000,
+            "statusMessage": "Checking TypeScript..."
+          }
+        ]
+      }
+    ]
   }
 }

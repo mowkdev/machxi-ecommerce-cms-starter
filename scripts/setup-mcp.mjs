@@ -237,8 +237,11 @@ const probePayloadHttp = async (url, key) => {
 banner()
 
 step("Environment files")
+const rootEnv = await readEnvFile(".env")
 const backendEnv = await readEnvFile("apps/backend/.env")
 const storefrontEnv = await readEnvFile("apps/storefront/.env.local")
+if (rootEnv) ok(".env")
+else warn(".env missing", "cp .env.template .env (optional — only needed for github MCP)")
 if (backendEnv) ok("apps/backend/.env")
 else fail("apps/backend/.env missing", "cp apps/backend/.env.template apps/backend/.env")
 if (storefrontEnv) ok("apps/storefront/.env.local")
@@ -262,6 +265,9 @@ if (payloadUrl) ok("PAYLOAD_DATABASE_URL", redactPg(payloadUrl))
 else fail("PAYLOAD_DATABASE_URL not set in apps/storefront/.env.local")
 if (payloadKey) ok("PAYLOAD_MCP_API_KEY", `${payloadKey.slice(0, 8)}…`)
 else warn("PAYLOAD_MCP_API_KEY empty", "create one in Payload admin (see step 5)")
+const githubToken = rootEnv?.GITHUB_PERSONAL_ACCESS_TOKEN
+if (githubToken) ok("GITHUB_PERSONAL_ACCESS_TOKEN", `${githubToken.slice(0, 8)}…`)
+else warn("GITHUB_PERSONAL_ACCESS_TOKEN empty", "optional — set in root .env to enable github MCP")
 
 if (errors > 0) {
   console.log(c.red("\nMissing required variables — aborting.\n"))
@@ -328,6 +334,19 @@ else if (payloadProbe.status === "down")
   warn(`payload @ ${url}`, `${payloadProbe.detail} — run 'pnpm storefront:dev'`)
 else fail(`payload @ ${url}`, payloadProbe.detail)
 
+step("GitHub MCP (via wrapper)")
+if (!githubToken) {
+  warn("github skipped", "no token in root .env (optional)")
+} else {
+  const githubProbe = await probeStdio({
+    command: "node",
+    args: ["scripts/mcp/github.mjs"],
+    label: "github",
+  })
+  if (githubProbe.status === "ok") ok("github", githubProbe.detail)
+  else fail("github", githubProbe.detail)
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // Summary
 // ────────────────────────────────────────────────────────────────────────────
@@ -335,15 +354,23 @@ else fail(`payload @ ${url}`, payloadProbe.detail)
 console.log("")
 console.log(c.cyan("─".repeat(60)))
 if (errors === 0 && warnings === 0) {
-  console.log(c.bold(c.green(" All five MCP servers ready.")))
+  console.log(c.bold(c.green(" All six MCP servers ready.")))
   console.log(c.dim(" Restart Claude Code, approve servers, then run /mcp to confirm."))
 } else if (errors === 0) {
   console.log(c.bold(c.yellow(` ${warnings} item(s) need attention:`)))
   if (!payloadKey) {
-    console.log(c.dim(" 1. pnpm storefront:dev"))
-    console.log(c.dim(" 2. http://localhost:8000/admin → MCP → API Keys → create"))
-    console.log(c.dim(" 3. Paste key into apps/storefront/.env.local → PAYLOAD_MCP_API_KEY="))
-    console.log(c.dim(" 4. Re-run pnpm setup:mcp"))
+    console.log(c.dim(" Payload MCP:"))
+    console.log(c.dim("   1. pnpm storefront:dev"))
+    console.log(c.dim("   2. http://localhost:8000/admin → MCP → API Keys → create"))
+    console.log(c.dim("   3. Paste key into apps/storefront/.env.local → PAYLOAD_MCP_API_KEY="))
+  }
+  if (!githubToken) {
+    console.log(c.dim(" GitHub MCP (optional):"))
+    console.log(c.dim("   1. https://github.com/settings/tokens → create PAT"))
+    console.log(c.dim("   2. Paste into root .env → GITHUB_PERSONAL_ACCESS_TOKEN="))
+  }
+  if (!payloadKey || !githubToken) {
+    console.log(c.dim(" Then re-run pnpm setup:mcp"))
   }
 } else {
   console.log(c.bold(c.red(` ${errors} error(s), ${warnings} warning(s) — fix above and re-run.`)))

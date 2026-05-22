@@ -19,6 +19,10 @@
     "payload": {
       "command": "node",
       "args": ["scripts/mcp/payload.mjs"]
+    },
+    "github": {
+      "command": "node",
+      "args": ["scripts/mcp/github.mjs"]
     }
   }
 }

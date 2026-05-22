@@ -1,7 +1,7 @@
 # MCP Servers
 
 This repo ships with [`.mcp.json`](../.mcp.json) at the root, which registers
-five [Model Context Protocol](https://modelcontextprotocol.io) servers for use
+six [Model Context Protocol](https://modelcontextprotocol.io) servers for use
 with [Claude Code](https://claude.com/claude-code). Anyone who clones the repo
 and runs Claude Code here will be prompted to approve them on first use.
 
@@ -18,14 +18,16 @@ exports, no `setx`, no user env vars to maintain.
 | `postgres-medusa` | Read/write Medusa Postgres. Schema, tables, ad-hoc queries.                                   | `apps/backend/.env`: `DATABASE_URL` |
 | `postgres-payload`| Read/write Payload Postgres (separate from Medusa's).                                        | `apps/storefront/.env.local`: `PAYLOAD_DATABASE_URL` |
 | `payload`         | Find/update Payload collections via the official Payload MCP plugin.                          | `apps/storefront/.env.local`: `PAYLOAD_MCP_API_KEY` |
+| `github`          | Read/write GitHub — issues, PRs, repo contents, search. _Optional._                          | `.env` (root): `GITHUB_PERSONAL_ACCESS_TOKEN` |
 
 ## Quick start
 
 ```bash
-# 1. Make sure both .env files exist (standard onboarding)
+# 1. Make sure all three .env files exist (standard onboarding)
+cp .env.template                  .env
 cp apps/backend/.env.template     apps/backend/.env
 cp apps/storefront/.env.template  apps/storefront/.env.local
-# (fill in the values — DB URLs, Medusa publishable key, etc.)
+# (fill in the values — DB URLs, Medusa publishable key, optional GitHub PAT, etc.)
 
 # 2. Start the storefront once so Payload migrates the new MCP API-keys table
 pnpm storefront:dev
@@ -100,6 +102,21 @@ Access controls are enforced at two layers: the plugin config in
 (what's *exposed* — currently `products` and `media`; `users` is intentionally
 not) and per-key toggles in the admin (what each key is *allowed* to do).
 
+### `github` — issues, PRs, repo browsing
+
+Optional. Skip the token in `.env` and the server simply won't start; the
+others keep working. With a token set:
+
+> *"List open issues in this repo labelled `bug`, sorted by last update."*
+
+> *"Open a PR from the current branch to `main` titled 'feat: add wishlist'
+> with the body from the latest commit message."*
+
+Scopes the token needs (classic PAT): `repo`, `read:org`, `read:user`.
+Fine-grained: `contents: R/W`, `issues: R/W`, `pull requests: R/W` on the
+repos you want Claude to touch. Create one at
+[github.com/settings/tokens](https://github.com/settings/tokens).
+
 ## Optional: Medusa MCP (manual install)
 
 There's no published npm package, so it's not in `.mcp.json`. The community
@@ -117,6 +134,7 @@ In practice the `postgres-medusa` MCP + writing throwaway scripts against
 | `.mcp.json` | Server registry — checked into git, picked up by Claude Code |
 | `scripts/mcp/postgres.mjs` | Wrapper: reads a connection string from any `.env` and spawns `@henkey/postgres-mcp-server` |
 | `scripts/mcp/payload.mjs` | Wrapper: reads `PAYLOAD_MCP_API_KEY` from `.env.local` and spawns `mcp-remote` against `/api/mcp` |
+| `scripts/mcp/github.mjs` | Wrapper: reads `GITHUB_PERSONAL_ACCESS_TOKEN` from root `.env` and spawns `@modelcontextprotocol/server-github` |
 | `scripts/setup-mcp.mjs` | Branded verification — run via `pnpm setup:mcp` |
 | `apps/storefront/src/payload.config.ts` | Registers the Payload `mcpPlugin()` and declares which collections are exposed |
 
@@ -131,6 +149,9 @@ In practice the `postgres-medusa` MCP + writing throwaway scripts against
 | `payload` MCP "fetch failed" | Storefront isn't running on `:8000`. `pnpm storefront:dev`. |
 | `@payloadcms/plugin-mcp` peer warning about `@modelcontextprotocol/sdk` | Benign — minor-version mismatch with the SDK shipped via `payload` itself. |
 | Want to override the Payload MCP URL (e.g. running on a different port) | Add `PAYLOAD_MCP_URL=...` to `apps/storefront/.env.local`. |
+| `github` MCP "Cannot read .env" | Run `cp .env.template .env` and (optionally) fill in `GITHUB_PERSONAL_ACCESS_TOKEN`. |
+| `github` MCP "GITHUB_PERSONAL_ACCESS_TOKEN is empty" | Optional server — either set the token in root `.env` or remove the `github` entry from `.mcp.json`. |
+| `github` MCP returns 401 / "Bad credentials" | Token revoked, expired, or missing required scopes. Regenerate at github.com/settings/tokens. |
 
 ## Updating or removing a server
 
