@@ -135,7 +135,3 @@ scripts/
 - [`CLAUDE.md`](CLAUDE.md) — Project context for AI agents (root)
 - [`apps/backend/CLAUDE.md`](apps/backend/CLAUDE.md) — Medusa v2 conventions
 - [`apps/storefront/AGENTS.md`](apps/storefront/AGENTS.md) — Next.js + Payload conventions
-
-## License
-
-MIT — see [`LICENSE`](LICENSE).
