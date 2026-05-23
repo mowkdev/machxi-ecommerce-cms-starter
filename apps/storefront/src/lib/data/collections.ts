@@ -2,12 +2,13 @@
 
 import { HttpTypes } from "@medusajs/types"
 
-import { sdk } from "@/lib/medusa"
+import { getMedusaSdk } from "@/lib/medusa"
 import { getCacheOptions, STORE_CACHE } from "@/lib/data/cookies"
 
 export const retrieveCollection = async (id: string) => {
   const next = { ...(await getCacheOptions("collections")) }
 
+  const sdk = await getMedusaSdk()
   return await sdk.client
     .fetch<{
       collection: HttpTypes.StoreCollection
@@ -23,6 +24,7 @@ export const listCollections = async (
   queryParams.limit ||= "100"
   queryParams.offset ||= "0"
 
+  const sdk = await getMedusaSdk()
   return await sdk.client
     .fetch<{
       collections: HttpTypes.StoreCollection[]
@@ -36,6 +38,7 @@ export const getCollectionByHandle = async (
 ): Promise<HttpTypes.StoreCollection | null> => {
   const next = { ...(await getCacheOptions("collections")) }
 
+  const sdk = await getMedusaSdk()
   return await sdk.client
     .fetch<HttpTypes.StoreCollectionListResponse>(`/store/collections`, {
       query: { handle, fields: "*products" },

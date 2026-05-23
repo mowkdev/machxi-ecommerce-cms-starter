@@ -1,3 +1,5 @@
+import path from "path"
+
 import type { NextConfig } from "next"
 import { withPayload } from "@payloadcms/next/withPayload"
 import createNextIntlPlugin from "next-intl/plugin"
@@ -12,6 +14,12 @@ const S3_HOSTNAME = process.env.MEDUSA_CLOUD_S3_HOSTNAME
 const S3_PATHNAME = process.env.MEDUSA_CLOUD_S3_PATHNAME
 
 const nextConfig: NextConfig = {
+  // Standalone output: emits .next/standalone/apps/storefront/server.js with
+  // a minimal node_modules, copied into the Docker runner stage.
+  output: "standalone",
+  // Tracing root — required in a monorepo so Next collects deps from the
+  // workspace root rather than just apps/storefront/node_modules.
+  outputFileTracingRoot: path.join(process.cwd(), "../.."),
   reactStrictMode: true,
   logging: {
     fetches: {

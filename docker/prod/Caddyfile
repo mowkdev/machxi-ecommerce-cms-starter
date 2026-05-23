@@ -1,0 +1,40 @@
+# Caddy 2 reverse proxy for production. Auto-issues Let's Encrypt certs for
+# the three hostnames on first request (state persisted in caddy-data volume).
+#
+# Caddy automatically uses its internal CA (self-signed) for localhost /
+# *.localhost / loopback domains, and ACME (Let's Encrypt) for public ones —
+# so no explicit tls directive is needed for either case.
+
+{
+	# ADMIN_EMAIL receives Let's Encrypt expiry notices.
+	email {$ADMIN_EMAIL:admin@example.com}
+}
+
+{$DOMAIN_API} {
+	# Medusa product/media uploads can be larger than the default 10 MB.
+	request_body {
+		max_size 50MB
+	}
+
+	reverse_proxy backend:9000 {
+		# Forward real client IPs to the backend for rate-limiting / logging.
+		header_up X-Real-IP {remote_host}
+	}
+}
+
+{$DOMAIN_STOREFRONT}, www.{$DOMAIN_STOREFRONT} {
+	reverse_proxy storefront:3000
+	encode gzip zstd
+
+	# Cache static assets aggressively; Next.js fingerprints filenames.
+	@static {
+		path /_next/static/*
+	}
+	header @static Cache-Control "public, max-age=31536000, immutable"
+}
+
+# Optional: expose MinIO uploads via a friendly subdomain. Comment out if
+# your media URLs go through signed S3 URLs instead.
+{$DOMAIN_CDN} {
+	reverse_proxy minio:9000
+}

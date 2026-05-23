@@ -4,7 +4,7 @@ import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
 
-import { sdk } from "@/lib/medusa"
+import { getMedusaSdk } from "@/lib/medusa"
 import medusaError from "@/lib/util/medusa-error"
 import {
   getAuthHeaders,
@@ -34,6 +34,7 @@ export async function retrieveCart(
   const headers = { ...(await getAuthHeaders()) }
   const next = { ...(await getCacheOptions("carts")) }
 
+  const sdk = await getMedusaSdk()
   return await sdk.client
     .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${id}`, {
       method: "GET",
@@ -59,6 +60,7 @@ export async function getOrSetCart(
 
   if (!cart) {
     const locale = await getLocale()
+    const sdk = await getMedusaSdk()
     const { cart: created } = await sdk.store.cart.create(
       {
         region_id: region.id,
@@ -73,6 +75,7 @@ export async function getOrSetCart(
   }
 
   if (cart && cart.region_id !== region.id) {
+    const sdk = await getMedusaSdk()
     await sdk.store.cart.update(cart.id, { region_id: region.id }, {}, headers)
     revalidateTag(await getCacheTag("carts"))
   }
@@ -88,6 +91,7 @@ export async function updateCart(data: HttpTypes.StoreUpdateCart) {
 
   const headers = { ...(await getAuthHeaders()) }
 
+  const sdk = await getMedusaSdk()
   return sdk.store.cart
     .update(cartId, data, {}, headers)
     .then(async ({ cart }) => {
@@ -117,6 +121,7 @@ export async function addToCart({
 
   const headers = { ...(await getAuthHeaders()) }
 
+  const sdk = await getMedusaSdk()
   await sdk.store.cart
     .createLineItem(cart.id, { variant_id: variantId, quantity }, {}, headers)
     .then(async () => {
@@ -140,6 +145,7 @@ export async function updateLineItem({
 
   const headers = { ...(await getAuthHeaders()) }
 
+  const sdk = await getMedusaSdk()
   await sdk.store.cart
     .updateLineItem(cartId, lineId, { quantity }, {}, headers)
     .then(async () => {
@@ -157,6 +163,7 @@ export async function deleteLineItem(lineId: string) {
 
   const headers = { ...(await getAuthHeaders()) }
 
+  const sdk = await getMedusaSdk()
   await sdk.store.cart
     .deleteLineItem(cartId, lineId, {}, headers)
     .then(async () => {
@@ -175,6 +182,7 @@ export async function setShippingMethod({
 }) {
   const headers = { ...(await getAuthHeaders()) }
 
+  const sdk = await getMedusaSdk()
   return sdk.store.cart
     .addShippingMethod(cartId, { option_id: shippingMethodId }, {}, headers)
     .then(async () => {
@@ -189,6 +197,7 @@ export async function initiatePaymentSession(
 ) {
   const headers = { ...(await getAuthHeaders()) }
 
+  const sdk = await getMedusaSdk()
   return sdk.store.payment
     .initiatePaymentSession(cart, data, {}, headers)
     .then(async (resp) => {
@@ -204,6 +213,7 @@ export async function applyPromotions(codes: string[]) {
 
   const headers = { ...(await getAuthHeaders()) }
 
+  const sdk = await getMedusaSdk()
   return sdk.store.cart
     .update(cartId, { promo_codes: codes }, {}, headers)
     .then(async () => {
@@ -285,6 +295,7 @@ export async function placeOrder(cartId?: string) {
 
   const headers = { ...(await getAuthHeaders()) }
 
+  const sdk = await getMedusaSdk()
   const cartRes = await sdk.store.cart
     .complete(id, {}, headers)
     .then(async (res) => {
@@ -326,6 +337,7 @@ export async function listCartOptions() {
   const headers = { ...(await getAuthHeaders()) }
   const next = { ...(await getCacheOptions("shippingOptions")) }
 
+  const sdk = await getMedusaSdk()
   return await sdk.client.fetch<{
     shipping_options: HttpTypes.StoreCartShippingOption[]
   }>("/store/shipping-options", {

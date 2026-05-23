@@ -1,7 +1,7 @@
 "use server"
 
 import { HttpTypes } from "@medusajs/types"
-import { sdk } from "@/lib/medusa"
+import { getMedusaSdk } from "@/lib/medusa"
 import { getCacheOptions, STORE_CACHE } from "./cookies"
 
 export const listRegions = async () => {
@@ -9,6 +9,7 @@ export const listRegions = async () => {
     ...(await getCacheOptions("regions")),
   }
 
+  const sdk = await getMedusaSdk()
   return await sdk.client
     .fetch<{ regions: HttpTypes.StoreRegion[] }>(`/store/regions`, {
       method: "GET",
@@ -23,6 +24,7 @@ export const retrieveRegion = async (id: string) => {
     ...(await getCacheOptions(["regions", id].join("-"))),
   }
 
+  const sdk = await getMedusaSdk()
   return await sdk.client
     .fetch<{ region: HttpTypes.StoreRegion }>(`/store/regions/${id}`, {
       method: "GET",

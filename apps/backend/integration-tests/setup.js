@@ -1,4 +1,4 @@
 // Setup file referenced by jest.config.js. Intentionally minimal.
+// API key + user collection now live in the payload_integration_settings
+// table; integration tests upsert them in beforeAll via the module service.
 process.env.PAYLOAD_SERVER_URL = process.env.PAYLOAD_SERVER_URL || "http://127.0.0.1:0"
-process.env.PAYLOAD_API_KEY = process.env.PAYLOAD_API_KEY || "test-key"
-process.env.PAYLOAD_USER_COLLECTION = process.env.PAYLOAD_USER_COLLECTION || "users"

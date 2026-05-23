@@ -1,12 +1,13 @@
 import { HttpTypes } from "@medusajs/types"
 
-import { sdk } from "@/lib/medusa"
+import { getMedusaSdk } from "@/lib/medusa"
 import { getCacheOptions, STORE_CACHE } from "@/lib/data/cookies"
 
 export const listCategories = async (query?: Record<string, unknown>) => {
   const next = { ...(await getCacheOptions("categories")) }
   const limit = query?.limit || 100
 
+  const sdk = await getMedusaSdk()
   return sdk.client
     .fetch<{ product_categories: HttpTypes.StoreProductCategory[] }>(
       "/store/product-categories",
@@ -28,6 +29,7 @@ export const getCategoryByHandle = async (categoryHandle: string[]) => {
   const handle = categoryHandle.join("/")
   const next = { ...(await getCacheOptions("categories")) }
 
+  const sdk = await getMedusaSdk()
   return sdk.client
     .fetch<HttpTypes.StoreProductCategoryListResponse>(
       `/store/product-categories`,

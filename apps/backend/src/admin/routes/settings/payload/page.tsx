@@ -1,9 +1,22 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { Badge, Button, Container, Heading, Text, toast } from "@medusajs/ui"
+import {
+  Badge,
+  Button,
+  Container,
+  Heading,
+  Input,
+  Label,
+  Text,
+  toast,
+} from "@medusajs/ui"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useRef, useState } from "react"
 
-type ConfigResponse = { serverUrl: string; userCollection: string }
+type ConfigResponse = {
+  serverUrl: string
+  userCollection: string
+  hasApiKey: boolean
+}
 
 type FailureRow = {
   id: string
@@ -57,11 +70,19 @@ const PayloadSettingsPage = () => {
   const pollStartedAt = useRef<number | null>(null)
   const previousSynced = useRef<number | null>(null)
   const idleTicks = useRef(0)
+  const [apiKeyInput, setApiKeyInput] = useState("")
+  const [userCollectionInput, setUserCollectionInput] = useState("")
 
   const { data: cfg } = useQuery<ConfigResponse>({
     queryKey: ["payload-config"],
     queryFn: () => fetchJson<ConfigResponse>("/admin/payload/config"),
   })
+
+  useEffect(() => {
+    if (cfg?.userCollection && !userCollectionInput) {
+      setUserCollectionInput(cfg.userCollection)
+    }
+  }, [cfg, userCollectionInput])
 
   const { data: stats, isLoading: statsLoading } = useQuery<StatsResponse>({
     queryKey: ["payload-sync-stats"],
@@ -86,6 +107,31 @@ const PayloadSettingsPage = () => {
     }
   }, [polling, stats])
 
+  const saveIntegration = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/admin/payload/integration", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          apiKey: apiKeyInput,
+          userCollection: userCollectionInput || "users",
+        }),
+      })
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { message?: string }
+        throw new Error(body.message || `Save failed (${res.status})`)
+      }
+      return res.json() as Promise<{ hasApiKey: boolean; userCollection: string }>
+    },
+    onSuccess: () => {
+      toast.success("Payload API key saved")
+      setApiKeyInput("")
+      queryClient.invalidateQueries({ queryKey: ["payload-config"] })
+    },
+    onError: (err: Error) => toast.error(err.message),
+  })
+
   const sync = useMutation({
     mutationFn: async () => {
       const res = await fetch("/admin/payload/sync/products", {
@@ -102,7 +148,6 @@ const PayloadSettingsPage = () => {
       previousSynced.current = stats?.synced ?? null
       idleTicks.current = 0
       setPolling(true)
-      // Kick off the first refetch immediately rather than waiting one interval.
       queryClient.invalidateQueries({ queryKey: ["payload-sync-stats"] })
     },
     onError: (err: Error) => toast.error(err.message),
@@ -112,18 +157,71 @@ const PayloadSettingsPage = () => {
     <Container className="p-6">
       <Heading level="h1">Payload CMS</Heading>
 
-      <div className="mt-4 space-y-2">
-        <Text>
-          <span className="font-semibold">Server URL:</span>{" "}
-          <code>{cfg?.serverUrl ?? "loading…"}</code>
-        </Text>
-        <Text>
-          <span className="font-semibold">User collection:</span>{" "}
-          <code>{cfg?.userCollection ?? "loading…"}</code>
-        </Text>
+      <div className="mt-6">
+        <div className="flex items-center gap-2">
+          <Text size="small" leading="compact" weight="plus" className="text-ui-fg-subtle">
+            Connection
+          </Text>
+          {cfg ? (
+            <Badge color={cfg.hasApiKey ? "green" : "orange"} size="2xsmall">
+              {cfg.hasApiKey ? "API key set" : "API key missing"}
+            </Badge>
+          ) : null}
+        </div>
+
+        <div className="mt-3 space-y-2">
+          <Text>
+            <span className="font-semibold">Server URL:</span>{" "}
+            <code>{cfg?.serverUrl ?? "loading…"}</code>
+            <Text size="small" className="text-ui-fg-subtle">
+              Set via the <code>PAYLOAD_SERVER_URL</code> env var on the backend.
+            </Text>
+          </Text>
+        </div>
+
+        <div className="mt-4 max-w-xl space-y-3">
+          <div>
+            <Label htmlFor="payload-api-key" size="small">
+              Payload user API key
+            </Label>
+            <Input
+              id="payload-api-key"
+              type="password"
+              autoComplete="off"
+              placeholder={cfg?.hasApiKey ? "•••••••• (replace to rotate)" : "Paste key here"}
+              value={apiKeyInput}
+              onChange={(e) => setApiKeyInput(e.target.value)}
+            />
+            <Text size="small" className="text-ui-fg-subtle mt-1">
+              Generate in Payload Admin → Users → your user → <strong>Enable API Key</strong>, then save and copy the value.
+            </Text>
+          </div>
+          <div>
+            <Label htmlFor="payload-user-collection" size="small">
+              User collection slug
+            </Label>
+            <Input
+              id="payload-user-collection"
+              placeholder="users"
+              value={userCollectionInput}
+              onChange={(e) => setUserCollectionInput(e.target.value)}
+            />
+            <Text size="small" className="text-ui-fg-subtle mt-1">
+              Defaults to <code>users</code>. Change only if your Payload admin user collection has a different slug.
+            </Text>
+          </div>
+          <Button
+            size="small"
+            onClick={() => saveIntegration.mutate()}
+            isLoading={saveIntegration.isPending}
+            disabled={saveIntegration.isPending || !apiKeyInput.trim()}
+          >
+            Save
+          </Button>
+        </div>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-10">
         <div className="flex items-center gap-2">
           <Text size="small" leading="compact" weight="plus" className="text-ui-fg-subtle">
             Sync status

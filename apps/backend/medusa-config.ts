@@ -3,10 +3,15 @@ import { loadEnv, defineConfig } from "@medusajs/framework/utils"
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
 
 const s3Bucket = process.env.S3_BUCKET
+const redisUrl = process.env.REDIS_URL
 
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    // Single-container deploy. Set MEDUSA_WORKER_MODE=worker to run a
+    // dedicated worker process; scheduled jobs only run in shared or worker
+    // mode (NOT server-only).
+    workerMode: (process.env.MEDUSA_WORKER_MODE as "shared" | "server" | "worker") || "shared",
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
@@ -29,10 +34,39 @@ module.exports = defineConfig({
       resolve: "./src/modules/payload",
       options: {
         serverUrl: process.env.PAYLOAD_SERVER_URL || "http://localhost:8000",
-        apiKey: process.env.PAYLOAD_API_KEY || "",
-        userCollection: process.env.PAYLOAD_USER_COLLECTION || "users",
+        // apiKey and userCollection now live in the payload_integration_settings
+        // table — set them via Medusa Admin → Settings → Payload Integration.
       },
     },
+    // Redis-backed cache / event bus / workflow engine / locking. Gated on
+    // REDIS_URL so local dev still works without Redis (Medusa falls back to
+    // in-memory). Production should always set REDIS_URL.
+    ...(redisUrl
+      ? [
+          {
+            resolve: "@medusajs/medusa/cache-redis",
+            options: { redisUrl },
+          },
+          { resolve: "@medusajs/medusa/event-bus-redis", options: { redisUrl } },
+          {
+            resolve: "@medusajs/medusa/workflow-engine-redis",
+            options: { redis: { url: redisUrl } },
+          },
+          {
+            resolve: "@medusajs/medusa/locking",
+            options: {
+              providers: [
+                {
+                  resolve: "@medusajs/medusa/locking-redis",
+                  id: "locking-redis",
+                  is_default: true,
+                  options: { redisUrl },
+                },
+              ],
+            },
+          },
+        ]
+      : []),
     ...(s3Bucket
       ? [
           {

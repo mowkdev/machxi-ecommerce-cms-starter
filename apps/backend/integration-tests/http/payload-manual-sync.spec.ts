@@ -10,6 +10,22 @@ medusaIntegrationTestRunner({
     beforeAll(async () => {
       mock = await startPayloadMockServer()
       process.env.PAYLOAD_SERVER_URL = mock.url
+      const container = getContainer()
+      const payloadService = container.resolve("payload") as {
+        listPayloadIntegrationSettings: () => Promise<Array<{ id: string }>>
+        createPayloadIntegrationSettings: (
+          data: { api_key: string; user_collection: string }
+        ) => Promise<unknown>
+        clearSettingsCache: () => void
+      }
+      const existing = await payloadService.listPayloadIntegrationSettings()
+      if (!existing.length) {
+        await payloadService.createPayloadIntegrationSettings({
+          api_key: "test-key",
+          user_collection: "users",
+        })
+      }
+      payloadService.clearSettingsCache()
     })
 
     afterAll(async () => {

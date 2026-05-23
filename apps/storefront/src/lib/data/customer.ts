@@ -4,7 +4,7 @@ import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
 
-import { sdk } from "@/lib/medusa"
+import { getMedusaSdk } from "@/lib/medusa"
 import medusaError from "@/lib/util/medusa-error"
 import {
   getAuthHeaders,
@@ -26,6 +26,7 @@ export const retrieveCustomer =
       ...(await getCacheOptions("customers")),
     }
 
+    const sdk = await getMedusaSdk()
     return await sdk.client
       .fetch<{ customer: HttpTypes.StoreCustomer }>(`/store/customers/me`, {
         method: "GET",
@@ -40,6 +41,7 @@ export const retrieveCustomer =
 
 export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
   const headers = { ...(await getAuthHeaders()) }
+  const sdk = await getMedusaSdk()
   const updated = await sdk.store.customer
     .update(body, {}, headers)
     .then(({ customer }) => customer)
@@ -54,6 +56,7 @@ export async function transferCart() {
   if (!cartId) return
 
   const headers = await getAuthHeaders()
+  const sdk = await getMedusaSdk()
   await sdk.store.cart.transferCart(cartId, {}, headers)
   revalidateTag(await getCacheTag("carts"))
 }
@@ -66,6 +69,7 @@ export async function login(
   const password = formData.get("password") as string
 
   try {
+    const sdk = await getMedusaSdk()
     const token = await sdk.auth.login("customer", "emailpass", {
       email,
       password,
@@ -96,6 +100,7 @@ export async function signup(
   }
 
   try {
+    const sdk = await getMedusaSdk()
     const registerToken = await sdk.auth.register("customer", "emailpass", {
       email: customerForm.email,
       password,
@@ -126,6 +131,7 @@ export async function signup(
 }
 
 export async function signout() {
+  const sdk = await getMedusaSdk()
   await sdk.auth.logout()
   await removeAuthToken()
   revalidateTag(await getCacheTag("customers"))
@@ -158,6 +164,7 @@ export const addCustomerAddress = async (
 
   const headers = { ...(await getAuthHeaders()) }
 
+  const sdk = await getMedusaSdk()
   return sdk.store.customer
     .createAddress(address, {}, headers)
     .then(async () => {
@@ -172,6 +179,7 @@ export const deleteCustomerAddress = async (
 ): Promise<{ success: boolean; error: string | null }> => {
   const headers = { ...(await getAuthHeaders()) }
 
+  const sdk = await getMedusaSdk()
   return sdk.store.customer
     .deleteAddress(addressId, headers)
     .then(async () => {
@@ -189,6 +197,7 @@ export async function requestPasswordReset(
   if (!email) return { ok: false, error: "Email is required" }
 
   try {
+    const sdk = await getMedusaSdk()
     await sdk.auth.resetPassword("customer", "emailpass", { identifier: email })
     return { ok: true, error: null }
   } catch (error) {
@@ -213,6 +222,7 @@ export async function resetPassword(
   }
 
   try {
+    const sdk = await getMedusaSdk()
     await sdk.auth.updateProvider(
       "customer",
       "emailpass",
@@ -253,6 +263,7 @@ export const updateCustomerAddress = async (
 
   const headers = { ...(await getAuthHeaders()) }
 
+  const sdk = await getMedusaSdk()
   return sdk.store.customer
     .updateAddress(addressId, address, {}, headers)
     .then(async () => {

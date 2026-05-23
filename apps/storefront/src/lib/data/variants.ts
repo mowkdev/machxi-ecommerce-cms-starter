@@ -2,7 +2,7 @@
 
 import { HttpTypes } from "@medusajs/types"
 
-import { sdk } from "@/lib/medusa"
+import { getMedusaSdk } from "@/lib/medusa"
 import { getAuthHeaders, getCacheOptions } from "./cookies"
 
 export const retrieveVariant = async (
@@ -16,6 +16,7 @@ export const retrieveVariant = async (
     ...(await getCacheOptions("variants")),
   }
 
+  const sdk = await getMedusaSdk()
   return sdk.client
     .fetch<{ variant: HttpTypes.StoreProductVariant }>(
       `/store/product-variants/${variant_id}`,

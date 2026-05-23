@@ -12,6 +12,7 @@ import { Users } from "./collections/Users"
 import { Media } from "./collections/Media"
 import { Pages } from "./collections/Pages"
 import { Products } from "./collections/Products"
+import { MedusaIntegration } from "./globals/MedusaIntegration"
 import { DEFAULT_LOCALE, LOCALES } from "./i18n/localization"
 
 const filename = fileURLToPath(import.meta.url)
@@ -39,6 +40,7 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, Pages, Products],
+  globals: [MedusaIntegration],
   // Same locale codes the storefront URL segment and next-intl use. Medusa
   // accepts BCP47 (en-US, lv-LV) — that mapping lives in
   // src/i18n/localization.ts and is applied at the Medusa SDK boundary.
@@ -56,10 +58,13 @@ export default buildConfig({
     pool: {
       connectionString: payloadDatabaseUrl,
     },
-    // Dev only: auto-apply collection schema changes (drop/rename columns,
-    // remove array sub-tables, etc.). Production should use generated
-    // migrations via `payload migrate:create` + `payload migrate`.
-    push: process.env.NODE_ENV !== "production",
+    // Auto-apply collection schema changes (drop/rename columns, remove array
+    // sub-tables, etc.). Defaults to ON in non-production for fast dev
+    // iteration. PAYLOAD_PUSH=true lets you opt in even when NODE_ENV=production
+    // — useful for local prod-parity testing before you've generated migrations.
+    push:
+      process.env.PAYLOAD_PUSH === "true" ||
+      process.env.NODE_ENV !== "production",
   }),
   plugins: [
     ...plugins,

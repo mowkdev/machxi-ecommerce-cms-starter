@@ -12,6 +12,7 @@ import { resolve } from "node:path"
 
 const SIDECAR = "minio-createbuckets"
 const ROOT = resolve(import.meta.dirname, "..")
+const COMPOSE_FILE = resolve(ROOT, "docker", "dev", "docker-compose.yml")
 const ENV_FILE = resolve(ROOT, ".env")
 const ENV_TEMPLATE = resolve(ROOT, ".env.template")
 
@@ -70,7 +71,7 @@ if (!existsSync(ENV_FILE)) {
 
 // ─── 2. Bring the stack up ─────────────────────────────────────────────────
 step("starting docker compose services...")
-run("docker", ["compose", "up", "-d"])
+run("docker", ["compose", "-f", COMPOSE_FILE, "--env-file", ENV_FILE, "up", "-d"])
 
 // ─── 3. Wait for the bucket-init sidecar to finish ─────────────────────────
 // `docker wait` blocks until the container stops. If it already exited it

@@ -1,7 +1,5 @@
 export interface PayloadModuleOptions {
   serverUrl: string
-  apiKey: string
-  userCollection?: string
 }
 
 export interface PayloadCollectionItem {
@@ -70,6 +68,16 @@ export interface PayloadProduct extends PayloadCollectionItem {
 
 export type PayloadFetch = (input: string | URL, init?: RequestInit) => Promise<Response>
 
+export interface PayloadIntegrationConfig {
+  apiKey: string
+  userCollection: string
+}
+
 export interface PayloadServiceDependencies {
   fetch?: PayloadFetch
+  /**
+   * Optional override for the DB-backed settings read. Tests pass a static
+   * config here so they don't need a Medusa container or migrations applied.
+   */
+  getSettings?: () => Promise<PayloadIntegrationConfig>
 }

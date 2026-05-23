@@ -98,8 +98,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'lv') | ('en' | 'lv')[];
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'medusa-integration': MedusaIntegration;
+  };
+  globalsSelect: {
+    'medusa-integration': MedusaIntegrationSelect<false> | MedusaIntegrationSelect<true>;
+  };
   locale: 'en' | 'lv';
   widgets: {
     collections: CollectionsWidget;
@@ -1316,6 +1320,31 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Cross-app keys that wire this storefront to the Medusa backend. Read by the server-side Medusa SDK factory.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "medusa-integration".
+ */
+export interface MedusaIntegration {
+  id: number;
+  /**
+   * Paste the default key from Medusa Admin → Settings → Publishable API Keys. Saving here invalidates the storefront's SDK cache.
+   */
+  publishableKey: string;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "medusa-integration_select".
+ */
+export interface MedusaIntegrationSelect<T extends boolean = true> {
+  publishableKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

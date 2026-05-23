@@ -1,7 +1,7 @@
 "use server"
 
 import { HttpTypes } from "@medusajs/types"
-import { sdk } from "@/lib/medusa"
+import { getMedusaSdk } from "@/lib/medusa"
 import { getAuthHeaders, getCacheOptions, STORE_CACHE } from "./cookies"
 import { getRegion, retrieveRegion } from "./regions"
 
@@ -55,6 +55,7 @@ export async function listProducts({
     ...(await getCacheOptions("products")),
   }
 
+  const sdk = await getMedusaSdk()
   const { products, count, offset, limit } = await sdk.client.fetch<{
     products: HttpTypes.StoreProduct[]
     count: number

@@ -43,12 +43,16 @@ pnpm --filter @machxi/backend exec medusa user -e admin@example.com -p supersecr
 pnpm dev
 ```
 
-Then, **one manual step** before the storefront can call the API:
+Then, **two one-time admin steps** before the storefront can call the API
+(both keys live in their app's database, not in env):
 
-1. Open **http://localhost:9000/app** and log in with the user you just created.
-2. Go to **Settings → Publishable API Keys**, create or copy a key.
-3. Paste it into `apps/storefront/.env.local` as
-   `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_...` and restart the storefront.
+1. Open **http://localhost:9000/app**, log in, copy the default key from
+   **Settings → Publishable API Keys**.
+2. Open **http://localhost:8000/admin**, create your Payload admin user,
+   then open **Globals → Medusa Integration** and paste the key.
+3. Back in Payload admin: go to **Users → your user**, toggle
+   **Enable API Key**, save, and copy the generated key.
+4. In Medusa admin: open **Settings → Payload Integration** and paste it.
 
 Storefront is now live at **http://localhost:8000**.
 

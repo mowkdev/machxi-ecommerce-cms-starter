@@ -10,8 +10,24 @@ medusaIntegrationTestRunner({
     beforeAll(async () => {
       mock = await startPayloadMockServer()
       process.env.PAYLOAD_SERVER_URL = mock.url
-      // Rebind the service options on the running container — read fresh on next request.
-      // (The service reads options once at construction; module is re-resolved per request via runtime.)
+      // Seed the integration settings row that the module service reads at
+      // request time (the module options no longer carry apiKey).
+      const container = getContainer()
+      const payloadService = container.resolve("payload") as {
+        listPayloadIntegrationSettings: () => Promise<Array<{ id: string }>>
+        createPayloadIntegrationSettings: (
+          data: { api_key: string; user_collection: string }
+        ) => Promise<unknown>
+        clearSettingsCache: () => void
+      }
+      const existing = await payloadService.listPayloadIntegrationSettings()
+      if (!existing.length) {
+        await payloadService.createPayloadIntegrationSettings({
+          api_key: "test-key",
+          user_collection: "users",
+        })
+      }
+      payloadService.clearSettingsCache()
     })
 
     afterAll(async () => {

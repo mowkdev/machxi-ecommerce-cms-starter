@@ -2,7 +2,7 @@
 
 import { HttpTypes } from "@medusajs/types"
 
-import { sdk } from "@/lib/medusa"
+import { getMedusaSdk } from "@/lib/medusa"
 import {
   getAuthHeaders,
   getCacheOptions,
@@ -13,6 +13,7 @@ export const listCartPaymentMethods = async (regionId: string) => {
   const headers = { ...(await getAuthHeaders()) }
   const next = { ...(await getCacheOptions("payment_providers")) }
 
+  const sdk = await getMedusaSdk()
   return sdk.client
     .fetch<HttpTypes.StorePaymentProviderListResponse>(
       `/store/payment-providers`,

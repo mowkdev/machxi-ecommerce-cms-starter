@@ -3,7 +3,7 @@
 import { revalidateTag } from "next/cache"
 import { getLocale as getIntlLocale } from "next-intl/server"
 
-import { sdk } from "@/lib/medusa"
+import { getMedusaSdk } from "@/lib/medusa"
 import { getAuthHeaders, getCacheTag, getCartId } from "@/lib/data/cookies"
 import {
   DEFAULT_LOCALE,
@@ -43,6 +43,7 @@ export const updateLocale = async (
     // default rather than stamping `en-US`.
     const cartLocale =
       localeCode === DEFAULT_LOCALE ? null : localeToMedusa(localeCode)
+    const sdk = await getMedusaSdk()
     await sdk.store.cart.update(
       cartId,
       { locale: cartLocale },

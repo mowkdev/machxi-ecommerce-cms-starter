@@ -7,11 +7,6 @@ type RequiredEnv = {
 
 const requiredEnvs: RequiredEnv[] = [
   {
-    key: "NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY",
-    description:
-      "Learn how to create a publishable key: https://docs.medusajs.com/resources/storefront-development/publishable-api-keys",
-  },
-  {
     key: "MEDUSA_BACKEND_URL",
     description:
       "Set the URL of your Medusa backend (e.g. http://localhost:9000). See https://docs.medusajs.com/learn/configurations/medusa-config#httpstorecors",

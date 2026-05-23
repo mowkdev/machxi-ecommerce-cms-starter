@@ -2,7 +2,7 @@
 
 import { HttpTypes } from "@medusajs/types"
 
-import { sdk } from "@/lib/medusa"
+import { getMedusaSdk } from "@/lib/medusa"
 import medusaError from "@/lib/util/medusa-error"
 import {
   getAuthHeaders,
@@ -14,6 +14,7 @@ export const retrieveOrder = async (id: string) => {
   const headers = { ...(await getAuthHeaders()) }
   const next = { ...(await getCacheOptions("orders")) }
 
+  const sdk = await getMedusaSdk()
   return sdk.client
     .fetch<HttpTypes.StoreOrderResponse>(`/store/orders/${id}`, {
       method: "GET",
@@ -37,6 +38,7 @@ export const listOrders = async (
   const headers = { ...(await getAuthHeaders()) }
   const next = { ...(await getCacheOptions("orders")) }
 
+  const sdk = await getMedusaSdk()
   return sdk.client
     .fetch<HttpTypes.StoreOrderListResponse>(`/store/orders`, {
       method: "GET",
@@ -72,6 +74,7 @@ export const createTransferRequest = async (
 
   const headers = await getAuthHeaders()
 
+  const sdk = await getMedusaSdk()
   return await sdk.store.order
     .requestTransfer(id, {}, { fields: "id, email" }, headers)
     .then(({ order }) => ({ success: true, error: null, order }))
@@ -84,6 +87,7 @@ export const createTransferRequest = async (
 
 export const acceptTransferRequest = async (id: string, token: string) => {
   const headers = await getAuthHeaders()
+  const sdk = await getMedusaSdk()
   return await sdk.store.order
     .acceptTransfer(id, { token }, {}, headers)
     .then(({ order }) => ({ success: true, error: null, order }))
@@ -96,6 +100,7 @@ export const acceptTransferRequest = async (id: string, token: string) => {
 
 export const declineTransferRequest = async (id: string, token: string) => {
   const headers = await getAuthHeaders()
+  const sdk = await getMedusaSdk()
   return await sdk.store.order
     .declineTransfer(id, { token }, {}, headers)
     .then(({ order }) => ({ success: true, error: null, order }))

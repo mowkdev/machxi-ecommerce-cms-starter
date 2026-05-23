@@ -1,8 +1,12 @@
-import { PayloadApiError } from "./errors"
+import { MedusaService } from "@medusajs/framework/utils"
+
+import { PayloadApiError, PayloadConfigMissingError } from "./errors"
+import PayloadIntegrationSettings from "./models/integration-settings"
 import type {
   PayloadBulkResult,
   PayloadCollectionItem,
   PayloadFetch,
+  PayloadIntegrationConfig,
   PayloadItemResult,
   PayloadModuleOptions,
   PayloadProduct,
@@ -11,18 +15,57 @@ import type {
   PayloadUpsertData,
 } from "./types"
 
-class PayloadModuleService {
+const SETTINGS_CACHE_TTL_MS = 60_000
+
+class PayloadModuleService extends MedusaService({
+  PayloadIntegrationSettings,
+}) {
   protected readonly options_: PayloadModuleOptions
   protected readonly fetch_: PayloadFetch
+  private readonly getSettingsOverride_?: () => Promise<PayloadIntegrationConfig>
+  private settingsCache_?: { value: PayloadIntegrationConfig; expires: number }
 
-  constructor(_container: unknown, options: PayloadModuleOptions, deps?: PayloadServiceDependencies) {
+  constructor(container: unknown, options: PayloadModuleOptions, deps?: PayloadServiceDependencies) {
+    super(...arguments)
     this.options_ = options
     this.fetch_ = deps?.fetch ?? ((globalThis as unknown as { fetch: PayloadFetch }).fetch)
+    this.getSettingsOverride_ = deps?.getSettings
   }
 
-  protected getAuthHeader(): string {
-    const collection = this.options_.userCollection || "users"
-    return `${collection} API-Key ${this.options_.apiKey}`
+  /**
+   * Resolve `{ apiKey, userCollection }` from the singleton DB row, with a
+   * 60-second in-memory cache to avoid hitting Postgres on every Payload
+   * request. Tests can inject a stub via `deps.getSettings`.
+   */
+  protected async getSettings(): Promise<PayloadIntegrationConfig> {
+    if (this.getSettingsOverride_) return this.getSettingsOverride_()
+
+    const now = Date.now()
+    if (this.settingsCache_ && this.settingsCache_.expires > now) {
+      return this.settingsCache_.value
+    }
+
+    const rows = await this.listPayloadIntegrationSettings()
+    const row = rows[0]
+    if (!row?.api_key) {
+      throw new PayloadConfigMissingError()
+    }
+    const value: PayloadIntegrationConfig = {
+      apiKey: row.api_key,
+      userCollection: row.user_collection || "users",
+    }
+    this.settingsCache_ = { value, expires: now + SETTINGS_CACHE_TTL_MS }
+    return value
+  }
+
+  /** Drop the in-memory settings cache so the next call hits Postgres. */
+  public clearSettingsCache(): void {
+    this.settingsCache_ = undefined
+  }
+
+  protected async getAuthHeader(): Promise<string> {
+    const { apiKey, userCollection } = await this.getSettings()
+    return `${userCollection} API-Key ${apiKey}`
   }
 
   protected buildUrl(path: string, query?: PayloadQueryOptions): string {
@@ -45,13 +88,14 @@ class PayloadModuleService {
   ): Promise<T> {
     const { query, headers, ...rest } = init
     const url = this.buildUrl(path, query)
+    const authHeader = await this.getAuthHeader()
     let response: Response
     try {
       response = await this.fetch_(url, {
         ...rest,
         headers: {
           "Content-Type": "application/json",
-          Authorization: this.getAuthHeader(),
+          Authorization: authHeader,
           ...(headers as Record<string, string> | undefined),
         },
       })

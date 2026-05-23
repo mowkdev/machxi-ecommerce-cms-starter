@@ -1,0 +1,8 @@
+# Force LF line endings on files that must run inside Linux containers,
+# regardless of the host OS or core.autocrlf setting. Otherwise Windows
+# checkouts give the postgres container a shebang ending in CRLF and the
+# init script silently fails with "cannot execute: required file not found".
+
+*.sh        text eol=lf
+Dockerfile  text eol=lf
+Caddyfile   text eol=lf

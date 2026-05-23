@@ -2,7 +2,7 @@
 
 import { HttpTypes } from "@medusajs/types"
 
-import { sdk } from "@/lib/medusa"
+import { getMedusaSdk } from "@/lib/medusa"
 import {
   getAuthHeaders,
   getCacheOptions,
@@ -13,6 +13,7 @@ export const listCartShippingMethods = async (cartId: string) => {
   const headers = { ...(await getAuthHeaders()) }
   const next = { ...(await getCacheOptions("fulfillment")) }
 
+  const sdk = await getMedusaSdk()
   return sdk.client
     .fetch<HttpTypes.StoreShippingOptionListResponse>(
       `/store/shipping-options`,
@@ -40,6 +41,7 @@ export const calculatePriceForShippingOption = async (
   }
   if (data) body.data = data
 
+  const sdk = await getMedusaSdk()
   return sdk.client
     .fetch<{ shipping_option: HttpTypes.StoreCartShippingOption }>(
       `/store/shipping-options/${optionId}/calculate`,

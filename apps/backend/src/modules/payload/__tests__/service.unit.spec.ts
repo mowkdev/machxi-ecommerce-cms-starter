@@ -1,9 +1,11 @@
 import PayloadModuleService from "../service"
-import { PayloadApiError } from "../errors"
 import type { PayloadFetch, PayloadProduct } from "../types"
 
 const OPTIONS = {
   serverUrl: "http://payload.local",
+}
+
+const DEFAULT_SETTINGS = {
   apiKey: "test-key",
   userCollection: "users",
 }
@@ -25,19 +27,32 @@ function makeFetch(responses: Array<{ status?: number; body: unknown }>): {
   return { fetch, calls }
 }
 
+function makeService(
+  responses: Array<{ status?: number; body: unknown }>,
+  settings = DEFAULT_SETTINGS
+) {
+  const { fetch, calls } = makeFetch(responses)
+  const service = new PayloadModuleService({}, OPTIONS, {
+    fetch,
+    getSettings: async () => settings,
+  })
+  return { service, calls }
+}
+
 describe("PayloadModuleService", () => {
   describe("makeRequest auth header", () => {
     it("sets Authorization: <userCollection> API-Key <apiKey>", async () => {
-      const { fetch, calls } = makeFetch([{ body: { docs: [], totalDocs: 0 } }])
-      const service = new PayloadModuleService({}, OPTIONS, { fetch })
+      const { service, calls } = makeService([{ body: { docs: [], totalDocs: 0 } }])
       await service.find<PayloadProduct>("products")
       const auth = (calls[0].init?.headers as Record<string, string>)?.Authorization
       expect(auth).toBe("users API-Key test-key")
     })
 
     it("uses the configured userCollection name", async () => {
-      const { fetch, calls } = makeFetch([{ body: { docs: [], totalDocs: 0 } }])
-      const service = new PayloadModuleService({}, { ...OPTIONS, userCollection: "admins" }, { fetch })
+      const { service, calls } = makeService(
+        [{ body: { docs: [], totalDocs: 0 } }],
+        { apiKey: "test-key", userCollection: "admins" }
+      )
       await service.find<PayloadProduct>("products")
       expect((calls[0].init?.headers as Record<string, string>).Authorization).toBe("admins API-Key test-key")
     })
@@ -46,8 +61,7 @@ describe("PayloadModuleService", () => {
   describe("create", () => {
     it("POSTs to /api/<collection> with JSON body", async () => {
       const doc = { id: "1", medusa_id: "p1", createdAt: "", updatedAt: "" }
-      const { fetch, calls } = makeFetch([{ status: 201, body: { doc, message: "ok" } }])
-      const service = new PayloadModuleService({}, OPTIONS, { fetch })
+      const { service, calls } = makeService([{ status: 201, body: { doc, message: "ok" } }])
       const result = await service.create<PayloadProduct>("products", { medusa_id: "p1" })
       expect(calls[0].url).toBe("http://payload.local/api/products")
       expect(calls[0].init?.method).toBe("POST")
@@ -59,8 +73,7 @@ describe("PayloadModuleService", () => {
   describe("update", () => {
     it("PATCHes /api/<collection>/<id>", async () => {
       const doc = { id: "1", medusa_id: "p1", createdAt: "", updatedAt: "" }
-      const { fetch, calls } = makeFetch([{ body: { doc, message: "ok" } }])
-      const service = new PayloadModuleService({}, OPTIONS, { fetch })
+      const { service, calls } = makeService([{ body: { doc, message: "ok" } }])
       await service.update<PayloadProduct>("products", "1", { title: "new" })
       expect(calls[0].url).toBe("http://payload.local/api/products/1")
       expect(calls[0].init?.method).toBe("PATCH")
@@ -70,8 +83,7 @@ describe("PayloadModuleService", () => {
 
   describe("delete", () => {
     it("DELETEs /api/<collection>/<id>", async () => {
-      const { fetch, calls } = makeFetch([{ body: { message: "deleted" } }])
-      const service = new PayloadModuleService({}, OPTIONS, { fetch })
+      const { service, calls } = makeService([{ body: { message: "deleted" } }])
       await service.delete("products", "1")
       expect(calls[0].url).toBe("http://payload.local/api/products/1")
       expect(calls[0].init?.method).toBe("DELETE")
@@ -80,8 +92,7 @@ describe("PayloadModuleService", () => {
 
   describe("find", () => {
     it("builds querystring from PayloadQueryOptions", async () => {
-      const { fetch, calls } = makeFetch([{ body: { docs: [], totalDocs: 0 } }])
-      const service = new PayloadModuleService({}, OPTIONS, { fetch })
+      const { service, calls } = makeService([{ body: { docs: [], totalDocs: 0 } }])
       await service.find<PayloadProduct>("products", {
         depth: 2,
         limit: 10,
@@ -97,8 +108,7 @@ describe("PayloadModuleService", () => {
     })
 
     it("supports where with $in arrays", async () => {
-      const { fetch, calls } = makeFetch([{ body: { docs: [], totalDocs: 0 } }])
-      const service = new PayloadModuleService({}, OPTIONS, { fetch })
+      const { service, calls } = makeService([{ body: { docs: [], totalDocs: 0 } }])
       await service.find<PayloadProduct>("products", {
         where: { medusa_id: { in: ["a", "b"] } },
       })
@@ -110,12 +120,15 @@ describe("PayloadModuleService", () => {
   describe("list (used by virtual link)", () => {
     it("returns a flat array of docs with product_id alias for link join", async () => {
       const doc = { id: "1", medusa_id: "p1", createdAt: "", updatedAt: "" }
-      const { fetch } = makeFetch([{ body: { docs: [doc], totalDocs: 1 } }])
-      const service = new PayloadModuleService({}, OPTIONS, { fetch })
+      const { service } = makeService([{ body: { docs: [doc], totalDocs: 1 } }])
       const result = await service.list({ product_id: "p1" })
       // Flat array (not wrapped in { payload_product }); product_id is the
       // join field RemoteJoiner uses to match docs to parent products.
-      expect(result).toEqual([{ ...doc, product_id: "p1" }])
+      // Top-level `id` is stripped because Medusa's translation pipeline
+      // recursively collects every `id` it sees and queries by them; Payload's
+      // numeric IDs aren't valid Medusa IDs and 500 the translation query.
+      const { id: _id, ...docWithoutId } = doc
+      expect(result).toEqual([{ ...docWithoutId, product_id: "p1" }])
     })
 
     it("accepts an array of product_ids", async () => {
@@ -123,8 +136,7 @@ describe("PayloadModuleService", () => {
         { id: "1", medusa_id: "p1", createdAt: "", updatedAt: "" },
         { id: "2", medusa_id: "p2", createdAt: "", updatedAt: "" },
       ]
-      const { fetch, calls } = makeFetch([{ body: { docs, totalDocs: 2 } }])
-      const service = new PayloadModuleService({}, OPTIONS, { fetch })
+      const { service, calls } = makeService([{ body: { docs, totalDocs: 2 } }])
       const result = await service.list({ product_id: ["p1", "p2"] })
       const url = new URL(calls[0].url)
       expect(url.searchParams.getAll("where[medusa_id][in][]")).toEqual(["p1", "p2"])
@@ -135,10 +147,9 @@ describe("PayloadModuleService", () => {
 
   describe("error handling", () => {
     it("throws PayloadApiError on non-2xx with status and body", async () => {
-      const { fetch } = makeFetch([
+      const { service } = makeService([
         { status: 422, body: { errors: [{ message: "validation failed", field: "medusa_id" }] } },
       ])
-      const service = new PayloadModuleService({}, OPTIONS, { fetch })
       await expect(service.create("products", { medusa_id: "" })).rejects.toMatchObject({
         name: "PayloadApiError",
         status: 422,
@@ -150,11 +161,15 @@ describe("PayloadModuleService", () => {
       const fetch: PayloadFetch = async () => {
         throw new Error("ECONNREFUSED")
       }
-      const service = new PayloadModuleService({}, OPTIONS, { fetch })
+      const service = new PayloadModuleService({}, OPTIONS, {
+        fetch,
+        getSettings: async () => DEFAULT_SETTINGS,
+      })
       await expect(service.find("products")).rejects.toMatchObject({
         name: "PayloadApiError",
         status: 0,
       })
     })
   })
+
 })

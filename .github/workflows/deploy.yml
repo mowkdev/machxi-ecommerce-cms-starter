@@ -1,0 +1,43 @@
+name: Deploy to Hetzner
+
+on:
+  workflow_run:
+    workflows: ["Build & push images"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to deploy (default: latest)"
+        required: false
+        default: "latest"
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # On workflow_run, only deploy if the build succeeded.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          # Override IMAGE_TAG only when triggered manually with an explicit input.
+          envs: IMAGE_TAG
+          script: |
+            set -euo pipefail
+            cd /opt/machxi
+            if [ -n "${IMAGE_TAG:-}" ]; then
+              # Overwrite the IMAGE_TAG line in .env (leave everything else alone).
+              sed -i.bak "s/^IMAGE_TAG=.*/IMAGE_TAG=${IMAGE_TAG}/" .env
+            fi
+            bash ./scripts/deploy.sh
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag }}
