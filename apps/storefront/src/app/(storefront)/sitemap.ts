@@ -4,9 +4,9 @@ import { listCollections } from "@/lib/data/collections"
 import { listProducts } from "@/lib/data/products"
 import { listRegions } from "@/lib/data/regions"
 import {
-  DEFAULT_LOCALE,
   LOCALES,
   LOCALE_CODES,
+  URL_DEFAULT_LOCALE,
 } from "@/i18n/localization"
 
 const SITE_URL =
@@ -27,7 +27,7 @@ function alternatesFor(path: string): MetadataRoute.Sitemap[number]["alternates"
   for (const code of LOCALE_CODES) {
     languages[code] = `${SITE_URL}/${code}${path}`
   }
-  languages["x-default"] = `${SITE_URL}/${DEFAULT_LOCALE}${path}`
+  languages["x-default"] = `${SITE_URL}/${URL_DEFAULT_LOCALE}${path}`
   return { languages }
 }
 

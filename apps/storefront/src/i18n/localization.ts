@@ -3,7 +3,15 @@ export const LOCALES = [
   { code: "lv", medusaCode: "lv-LV", label: "Latviešu" },
 ] as const
 
+// English is the canonical (untranslated) content base. Medusa stores
+// English products with NO locale header; Payload uses this as the
+// `fallback` locale when a Latvian field is missing.
 export const DEFAULT_LOCALE = "en"
+
+// Latvian is the primary URL default — `/` redirects to `/lv`. Decoupled
+// from DEFAULT_LOCALE on purpose: content fallback (en) and URL default
+// (lv) serve different responsibilities.
+export const URL_DEFAULT_LOCALE = "lv"
 
 export type LocaleCode = (typeof LOCALES)[number]["code"]
 

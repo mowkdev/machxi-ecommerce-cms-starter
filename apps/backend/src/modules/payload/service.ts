@@ -122,6 +122,11 @@ class PayloadModuleService {
    * the alias) — RemoteJoiner reads each doc's `product_id` field to match
    * docs back to their parent Medusa products. Each doc therefore carries
    * `product_id` (aliased from Payload's `medusa_id`).
+   *
+   * Payload's auto-generated `id` fields (top-level + every nested array
+   * item) are stripped before returning: Medusa's translation pipeline
+   * recursively collects every `id` it sees and queries `translations` by
+   * `reference_id IN (...)`, which 500s on non-Medusa-shaped IDs.
    */
   async list(
     filters: { product_id: string | string[] }
@@ -133,8 +138,26 @@ class PayloadModuleService {
       limit: ids.length,
       depth: 2,
     })
-    return result.docs.map((doc) => ({ ...doc, product_id: doc.medusa_id }))
+    return result.docs.map((doc) => ({
+      ...stripPayloadIds(doc),
+      product_id: doc.medusa_id,
+    }))
   }
+}
+
+function stripPayloadIds<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map(stripPayloadIds) as unknown as T
+  }
+  if (value !== null && typeof value === "object") {
+    const out: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(value)) {
+      if (k === "id") continue
+      out[k] = stripPayloadIds(v)
+    }
+    return out as T
+  }
+  return value
 }
 
 function serializeQuery(query: PayloadQueryOptions): Record<string, string | string[] | number | undefined> {

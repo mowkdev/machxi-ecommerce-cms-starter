@@ -6,6 +6,7 @@ import { getLocale as getIntlLocale } from "next-intl/server"
 import { sdk } from "@/lib/medusa"
 import { getAuthHeaders, getCacheTag, getCartId } from "@/lib/data/cookies"
 import {
+  DEFAULT_LOCALE,
   type LocaleCode,
   isLocaleCode,
   localeToMedusa,
@@ -37,9 +38,14 @@ export const updateLocale = async (
   const cartId = await getCartId()
   if (cartId) {
     const headers = { ...(await getAuthHeaders()) }
+    // English is Medusa's unlocalized base content — clear the cart's
+    // locale field so emails/notifications fall back to the backend
+    // default rather than stamping `en-US`.
+    const cartLocale =
+      localeCode === DEFAULT_LOCALE ? null : localeToMedusa(localeCode)
     await sdk.store.cart.update(
       cartId,
-      { locale: localeToMedusa(localeCode) },
+      { locale: cartLocale },
       {},
       headers
     )
