@@ -1,8 +1,16 @@
-# Production stack: full container set used both on the Hetzner VPS and for
-# local prod-parity testing (`pnpm docker:prod`).
+# Production stack: full container set used both on the Hetzner / Contabo VPS
+# and (with the local-minio override) for local prod-parity testing.
 #
-# Reads /opt/machxi/.env on the VPS (real secrets) or docker/prod/.env.local
-# when run from the repo root. See docker/prod/.env.example for the schema.
+# Reads /opt/machxi/.env on the VPS (real secrets) or docker/prod/.env when
+# run from the repo root. See docker/prod/.env.example for the schema.
+#
+# Object storage (Contabo / R2 / AWS S3 / etc.) is configured via the S3_*
+# env vars. Both Medusa and Payload read the same credentials and endpoint;
+# only the bucket name differs (S3_BUCKET_MEDUSA vs S3_BUCKET_PAYLOAD).
+#
+# For local testing without an external object storage account, layer on
+# docker-compose.local-minio.yml which adds a MinIO container and points
+# S3_ENDPOINT at it. `pnpm docker:prod:local` does this automatically.
 
 name: machxi-prod
 
@@ -14,7 +22,6 @@ networks:
 volumes:
   pg-data:
   redis-data:
-  minio-data:
   caddy-data:
   caddy-config:
 
@@ -29,8 +36,9 @@ services:
       POSTGRES_MEDUSA_DB: ${POSTGRES_MEDUSA_DB}
       POSTGRES_PAYLOAD_DB: ${POSTGRES_PAYLOAD_DB}
     ports:
-      # Expose on a non-standard host port so it doesn't collide with the
-      # dev postgres on 5432. Internal docker network still uses 5432.
+      # Expose on a non-standard host port so it doesn't collide with the dev
+      # postgres on 5432. Internal docker network still uses 5432. Used by the
+      # local launcher to migrate from the host (in-container migrate hangs).
       - "${POSTGRES_HOST_PORT:-5433}:5432"
     volumes:
       - pg-data:/var/lib/postgresql/data
@@ -58,41 +66,13 @@ services:
       retries: 10
     networks: [machxi]
 
-  minio:
-    image: minio/minio:latest
-    restart: unless-stopped
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    volumes:
-      - minio-data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    networks: [machxi]
-
-  createbuckets:
-    image: minio/mc:latest
-    depends_on:
-      minio:
-        condition: service_healthy
-    entrypoint: >
-      /bin/sh -c "
-      mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
-      mc mb --ignore-existing local/$${MINIO_MEDUSA_BUCKET};
-      mc mb --ignore-existing local/$${MINIO_PAYLOAD_BUCKET};
-      exit 0;
-      "
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-      MINIO_MEDUSA_BUCKET: ${MINIO_MEDUSA_BUCKET}
-      MINIO_PAYLOAD_BUCKET: ${MINIO_PAYLOAD_BUCKET}
-    networks: [machxi]
-
+  # ──────────────────────────────────────────────────────────────────────────
+  # Medusa — split server / worker. Same image, different MEDUSA_WORKER_MODE.
+  # `backend` handles HTTP only; `backend-worker` handles BullMQ jobs and
+  # subscribers. Both share the same Redis so the server posts jobs and the
+  # worker picks them up. Scheduled jobs (cron) ONLY run on the worker — never
+  # set workerMode=server on it.
+  # ──────────────────────────────────────────────────────────────────────────
   backend:
     image: ${BACKEND_IMAGE:-ghcr.io/mowkdev/machxi-backend}:${IMAGE_TAG:-latest}
     restart: unless-stopped
@@ -102,6 +82,7 @@ services:
       redis:
         condition: service_healthy
     environment:
+      MEDUSA_WORKER_MODE: server
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_MEDUSA_DB}
       REDIS_URL: redis://redis:6379
       STORE_CORS: ${STORE_CORS}
@@ -110,14 +91,43 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       COOKIE_SECRET: ${COOKIE_SECRET}
       PAYLOAD_SERVER_URL: ${PAYLOAD_SERVER_URL}
-      MEDUSA_WORKER_MODE: ${MEDUSA_WORKER_MODE:-shared}
-      # S3 / MinIO for file uploads
+      # Object storage (Contabo / R2 / S3 — same interface).
       S3_ENDPOINT: ${S3_ENDPOINT}
       S3_FILE_URL: ${S3_FILE_URL}
       S3_REGION: ${S3_REGION}
-      S3_BUCKET: ${MINIO_MEDUSA_BUCKET}
-      S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
-      S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      S3_BUCKET: ${S3_BUCKET_MEDUSA}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+    networks: [machxi]
+
+  backend-worker:
+    image: ${BACKEND_IMAGE:-ghcr.io/mowkdev/machxi-backend}:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      MEDUSA_WORKER_MODE: worker
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_MEDUSA_DB}
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      PAYLOAD_SERVER_URL: ${PAYLOAD_SERVER_URL}
+      # Storefront-side CORS is irrelevant for the worker (no HTTP), but the
+      # config schema still requires them — pass empty strings to satisfy
+      # validation without granting any extra origin.
+      STORE_CORS: ""
+      ADMIN_CORS: ""
+      AUTH_CORS: ""
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      S3_FILE_URL: ${S3_FILE_URL}
+      S3_REGION: ${S3_REGION}
+      S3_BUCKET: ${S3_BUCKET_MEDUSA}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+    # Intentionally no `ports:` block — the worker is not user-facing.
     networks: [machxi]
 
   storefront:
@@ -128,8 +138,6 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      # Server-side URL for Medusa SDK + middleware. Points at the backend
-      # container on the internal network.
       MEDUSA_BACKEND_URL: http://backend:9000
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
       NEXT_PUBLIC_DEFAULT_REGION: ${NEXT_PUBLIC_DEFAULT_REGION:-us}
@@ -139,12 +147,13 @@ services:
       PAYLOAD_PREVIEW_SECRET: ${PAYLOAD_PREVIEW_SECRET}
       PAYLOAD_MCP_API_KEY: ${PAYLOAD_MCP_API_KEY:-}
       PAYLOAD_PUSH: ${PAYLOAD_PUSH:-}
-      # Payload's S3 storage plugin
+      # Payload's S3 storage plugin — same endpoint + creds as Medusa, but
+      # a different bucket so they don't collide.
       S3_ENDPOINT: ${S3_ENDPOINT}
       S3_REGION: ${S3_REGION}
-      S3_BUCKET: ${MINIO_PAYLOAD_BUCKET}
-      S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
-      S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      S3_BUCKET: ${S3_BUCKET_PAYLOAD}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
     networks: [machxi]
 
   caddy:
@@ -159,8 +168,7 @@ services:
     environment:
       DOMAIN_STOREFRONT: ${DOMAIN_STOREFRONT}
       DOMAIN_API: ${DOMAIN_API}
-      DOMAIN_CDN: ${DOMAIN_CDN:-cdn.localhost}
-      CADDY_TLS: ${CADDY_TLS:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data

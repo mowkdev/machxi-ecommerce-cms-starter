@@ -1,0 +1,80 @@
+# Compose override that adds a local MinIO container in place of an external
+# Object Storage provider. Layered on top of docker-compose.yml when running
+# `pnpm docker:prod:local` so the prod stack works without Contabo / R2 / S3
+# credentials.
+#
+# MinIO speaks the same S3 API as Contabo Object Storage, so the only
+# difference between local and real prod is the endpoint URL — the S3_*
+# credentials and bucket names are identical in both cases.
+
+volumes:
+  minio-data:
+
+services:
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      # Use the same S3 creds the apps will use. Single source of truth in .env.
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY_ID}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_ACCESS_KEY}
+    ports:
+      # 9110 → S3 API (matches S3_FILE_URL in the local .env so browsers can
+      # render uploaded images), 9111 → admin console. Offset from the dev
+      # MinIO's 9100/9101 so both can run side by side.
+      - "9110:9000"
+      - "9111:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [machxi]
+
+  createbuckets:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 $${S3_ACCESS_KEY_ID} $${S3_SECRET_ACCESS_KEY};
+      mc mb --ignore-existing local/$${S3_BUCKET_MEDUSA};
+      mc mb --ignore-existing local/$${S3_BUCKET_PAYLOAD};
+      mc anonymous set download local/$${S3_BUCKET_MEDUSA};
+      mc anonymous set download local/$${S3_BUCKET_PAYLOAD};
+      exit 0;
+      "
+    environment:
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
+      S3_BUCKET_MEDUSA: ${S3_BUCKET_MEDUSA}
+      S3_BUCKET_PAYLOAD: ${S3_BUCKET_PAYLOAD}
+    networks: [machxi]
+
+  # Redirect the apps from the external Object Storage endpoint to the local
+  # MinIO container. The base compose file already wires every S3_* env var
+  # through; we just override S3_ENDPOINT here.
+  backend:
+    depends_on:
+      createbuckets:
+        condition: service_completed_successfully
+    environment:
+      S3_ENDPOINT: http://minio:9000
+
+  backend-worker:
+    depends_on:
+      createbuckets:
+        condition: service_completed_successfully
+    environment:
+      S3_ENDPOINT: http://minio:9000
+
+  storefront:
+    depends_on:
+      createbuckets:
+        condition: service_completed_successfully
+    environment:
+      S3_ENDPOINT: http://minio:9000

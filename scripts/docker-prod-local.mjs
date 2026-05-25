@@ -2,9 +2,13 @@
 // Local prod-parity launcher.
 //
 // Builds machxi-backend:local + machxi-storefront:local from the current
-// source, ensures docker/prod/.env exists with localhost defaults, brings up
-// the prod compose stack with Caddy serving self-signed certs via its
-// internal CA, and runs migrations + the idempotent seed.
+// source, ensures docker/prod/.env exists with localhost-friendly defaults,
+// brings up the prod compose stack with Caddy serving self-signed certs via
+// its internal CA, runs migrations, and cross-wires the publishable key.
+//
+// Object Storage in prod is provided externally (Contabo / R2 / S3). For
+// local testing, the docker-compose.local-minio.yml override adds a MinIO
+// container speaking the same S3 API — no external account needed.
 //
 // Run via `pnpm docker:prod:local`.
 
@@ -14,6 +18,12 @@ import { resolve } from "node:path"
 
 const ROOT = resolve(import.meta.dirname, "..")
 const COMPOSE = resolve(ROOT, "docker", "prod", "docker-compose.yml")
+const COMPOSE_LOCAL_MINIO = resolve(
+  ROOT,
+  "docker",
+  "prod",
+  "docker-compose.local-minio.yml"
+)
 const ENV_FILE = resolve(ROOT, "docker", "prod", ".env")
 const ENV_EXAMPLE = resolve(ROOT, "docker", "prod", ".env.example")
 
@@ -36,19 +46,45 @@ const fail = (msg, code = 1) => {
   process.exit(code)
 }
 
-function run(cmd, args, { allowFail = false, capture = false, env } = {}) {
-  const result = spawnSync(cmd, args, {
-    stdio: capture ? ["ignore", "pipe", "pipe"] : "inherit",
+// On Windows, npm-bin shims resolve via PATHEXT — Node's spawn can't find
+// them without shell:true. But shell:true joins args into a single cmd
+// string which word-splits on whitespace, breaking any args that contain
+// spaces (like SQL queries). So: resolve shims to their .cmd file on
+// Windows up front, and never use shell:true.
+function resolveBin(cmd) {
+  if (process.platform !== "win32") return cmd
+  if (cmd === "pnpm" || cmd === "npm" || cmd === "yarn" || cmd === "npx") {
+    return `${cmd}.cmd`
+  }
+  return cmd
+}
+
+function run(cmd, args, { allowFail = false, capture = false, env, input } = {}) {
+  const result = spawnSync(resolveBin(cmd), args, {
+    stdio: input !== undefined
+      ? ["pipe", capture ? "pipe" : "inherit", capture ? "pipe" : "inherit"]
+      : capture ? ["ignore", "pipe", "pipe"] : "inherit",
     cwd: ROOT,
     encoding: "utf8",
     env: env ? { ...process.env, ...env } : process.env,
+    input,
   })
   if (result.error) fail(`failed to spawn '${cmd}': ${result.error.message}`)
   if (result.status !== 0 && !allowFail) process.exit(result.status ?? 1)
   return result
 }
 
-const compose = ["compose", "-f", COMPOSE, "--env-file", ENV_FILE]
+// Always layer the local-MinIO override on top so we don't need external
+// Object Storage credentials for the local test.
+const compose = [
+  "compose",
+  "-f",
+  COMPOSE,
+  "-f",
+  COMPOSE_LOCAL_MINIO,
+  "--env-file",
+  ENV_FILE,
+]
 
 // ─── 1. Generate .env if absent ───────────────────────────────────────────
 if (!existsSync(ENV_FILE)) {
@@ -60,8 +96,6 @@ if (!existsSync(ENV_FILE)) {
     .replace(/^IMAGE_TAG=.*$/m, "IMAGE_TAG=local")
     .replace(/^DOMAIN_STOREFRONT=.*$/m, "DOMAIN_STOREFRONT=localhost")
     .replace(/^DOMAIN_API=.*$/m, "DOMAIN_API=api.localhost")
-    .replace(/^DOMAIN_CDN=.*$/m, "DOMAIN_CDN=cdn.localhost")
-    .replace(/^CADDY_TLS_DIRECTIVE=.*$/m, "CADDY_TLS_DIRECTIVE=internal")
     .replace(/^ADMIN_EMAIL=.*$/m, "ADMIN_EMAIL=admin@localhost")
     .replace(/^STORE_CORS=.*$/m, "STORE_CORS=https://localhost")
     .replace(/^ADMIN_CORS=.*$/m, "ADMIN_CORS=https://api.localhost")
@@ -73,9 +107,24 @@ if (!existsSync(ENV_FILE)) {
       /^NEXT_PUBLIC_SITE_URL=.*$/m,
       "NEXT_PUBLIC_SITE_URL=https://localhost"
     )
+    // Local MinIO doesn't have a public CDN URL; serve uploads through MinIO's
+    // own port. The override sets S3_ENDPOINT=http://minio:9000 internally;
+    // for browser-visible URLs we point at localhost MinIO via Caddy-bypass.
+    .replace(
+      /^S3_ENDPOINT=.*$/m,
+      "S3_ENDPOINT=http://minio:9000  # overridden by docker-compose.local-minio.yml"
+    )
     .replace(
       /^S3_FILE_URL=.*$/m,
-      "S3_FILE_URL=https://cdn.localhost/medusa-uploads"
+      "S3_FILE_URL=http://localhost:9110/medusa-uploads  # local MinIO only"
+    )
+    .replace(
+      /^S3_ACCESS_KEY_ID=.*$/m,
+      "S3_ACCESS_KEY_ID=local-access-key"
+    )
+    .replace(
+      /^S3_SECRET_ACCESS_KEY=.*$/m,
+      "S3_SECRET_ACCESS_KEY=local-secret-key"
     )
     .replace(/REPLACE_ME_STRONG_RANDOM/g, "local-dev-password-not-secret")
     .replace(
@@ -108,9 +157,9 @@ run("docker", [
   ".",
 ])
 
-// ─── 3. Bring up data plane ───────────────────────────────────────────────
+// ─── 3. Bring up data plane (postgres + redis + minio + createbuckets) ────
 step("starting postgres + redis + minio...")
-run("docker", [...compose, "up", "-d", "postgres", "redis", "minio"])
+run("docker", [...compose, "up", "-d", "postgres", "redis", "minio", "createbuckets"])
 
 // ─── 4. Wait for postgres ─────────────────────────────────────────────────
 step("waiting for postgres to be ready...")
@@ -134,17 +183,14 @@ ok("postgres ready")
 
 // ─── 5. Migrate + seed (from HOST against the exposed prod postgres) ─────
 // Running `medusa db:migrate` inside the container hangs on Windows Docker
-// Desktop after module init (workflow-engine-redis appears to hold the event
-// loop). The host-side migrate works in seconds because it uses ts-node and
-// has the full devDeps tree. The prod compose exposes postgres on host port
-// 5433 so we can reach it from outside the docker network.
+// Desktop after module init. The host-side migrate works in seconds because
+// it uses ts-node and has the full devDeps tree. The prod compose exposes
+// postgres on host port 5433 so we can reach it from outside the docker net.
 const pgPort = envContents.match(/^POSTGRES_HOST_PORT=(.+)$/m)?.[1].trim() ?? "5433"
 const pgPass = envContents.match(/^POSTGRES_PASSWORD=(.+)$/m)?.[1].trim() ?? ""
 const medusaDb = envContents.match(/^POSTGRES_MEDUSA_DB=(.+)$/m)?.[1].trim() ?? "medusa"
 const payloadDb = envContents.match(/^POSTGRES_PAYLOAD_DB=(.+)$/m)?.[1].trim() ?? "payload"
-const payloadSecret = envContents.match(/^PAYLOAD_SECRET=(.+)$/m)?.[1].trim() ?? ""
 const medusaDbUrl = `postgres://${pgUser}:${pgPass}@localhost:${pgPort}/${medusaDb}`
-const payloadDbUrl = `postgres://${pgUser}:${pgPass}@localhost:${pgPort}/${payloadDb}`
 
 step("running medusa db:migrate (from host)...")
 run("pnpm", ["--filter", "@machxi/backend", "exec", "medusa", "db:migrate"], {
@@ -162,10 +208,10 @@ const dumpResult = run(
   { capture: true, allowFail: true }
 )
 if (dumpResult.status === 0 && dumpResult.stdout) {
-  const psqlResult = spawnSync(
+  const psqlResult = run(
     "docker",
     ["exec", "-i", "machxi-prod-postgres-1", "psql", "-U", pgUser, "-d", payloadDb],
-    { input: dumpResult.stdout, stdio: ["pipe", "ignore", "inherit"], cwd: ROOT }
+    { input: dumpResult.stdout, allowFail: true, capture: true }
   )
   if (psqlResult.status === 0) {
     ok("payload schema copied from dev DB")
@@ -181,8 +227,16 @@ if (dumpResult.status === 0 && dumpResult.stdout) {
 }
 
 // ─── 6. App tier + Caddy ──────────────────────────────────────────────────
-step("starting backend, storefront, caddy...")
-run("docker", [...compose, "up", "-d", "backend", "storefront", "caddy"])
+step("starting backend (server), backend-worker, storefront, caddy...")
+run("docker", [
+  ...compose,
+  "up",
+  "-d",
+  "backend",
+  "backend-worker",
+  "storefront",
+  "caddy",
+])
 
 // ─── 7. Auto-inject the Medusa publishable key into Payload global ────────
 // On a real first deploy an admin does this manually via the UI; locally we
@@ -206,7 +260,7 @@ const keyResult = run(
 )
 const publishableKey = (keyResult.stdout ?? "").trim()
 if (publishableKey) {
-  spawnSync(
+  run(
     "docker",
     [
       "exec",
@@ -219,7 +273,7 @@ if (publishableKey) {
       "-c",
       `INSERT INTO medusa_integration (publishable_key, created_at, updated_at) SELECT '${publishableKey}', now(), now() WHERE NOT EXISTS (SELECT 1 FROM medusa_integration)`,
     ],
-    { stdio: "ignore", cwd: ROOT }
+    { allowFail: true, capture: true }
   )
   // Storefront caches the global for 60s; restart so the value is picked up now.
   run("docker", [...compose, "restart", "storefront"], { capture: true })
@@ -232,15 +286,16 @@ if (publishableKey) {
 console.log()
 ok(c.bold("prod-parity stack is up"))
 console.log()
-console.log(c.dim("  Storefront     → ") + "https://localhost")
-console.log(c.dim("  Payload admin  → ") + "https://localhost/admin")
-console.log(c.dim("  Medusa admin   → ") + "https://api.localhost/app")
+console.log(c.dim("  Storefront      → ") + "https://localhost")
+console.log(c.dim("  Payload admin   → ") + "https://localhost/admin")
+console.log(c.dim("  Medusa admin    → ") + "https://api.localhost/app")
+console.log(c.dim("  MinIO console   → ") + "http://localhost:9111  " + c.dim("(creds in docker/prod/.env)"))
 console.log()
 console.log(c.yellow("Browser will show a cert warning (self-signed)."))
 console.log(c.dim("To trust Caddy's CA on this machine:"))
 console.log(
   c.dim(
-    "  docker compose -f docker/prod/docker-compose.yml --env-file docker/prod/.env exec caddy caddy trust"
+    "  docker compose -f docker/prod/docker-compose.yml -f docker/prod/docker-compose.local-minio.yml --env-file docker/prod/.env exec caddy caddy trust"
   )
 )
 console.log()
@@ -248,7 +303,7 @@ console.log(c.bold("Next: create admin users (one-time)"))
 console.log(
   "  Medusa admin: " +
     c.dim(
-      "docker compose -f docker/prod/docker-compose.yml --env-file docker/prod/.env exec backend node_modules/.bin/medusa user -e admin@x.com -p supersecret"
+      "docker compose -f docker/prod/docker-compose.yml -f docker/prod/docker-compose.local-minio.yml --env-file docker/prod/.env exec backend node_modules/.bin/medusa user -e admin@x.com -p supersecret"
     )
 )
 console.log("  Payload admin: sign up at https://localhost/admin")
@@ -264,5 +319,5 @@ console.log()
 console.log(c.dim("Tear down:  ") + "pnpm docker:prod:down")
 console.log(
   c.dim("Wipe data:  ") +
-    "docker compose -f docker/prod/docker-compose.yml --env-file docker/prod/.env down -v"
+    "docker compose -f docker/prod/docker-compose.yml -f docker/prod/docker-compose.local-minio.yml --env-file docker/prod/.env down -v"
 )

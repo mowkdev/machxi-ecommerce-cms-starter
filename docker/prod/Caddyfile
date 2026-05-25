@@ -1,9 +1,14 @@
 # Caddy 2 reverse proxy for production. Auto-issues Let's Encrypt certs for
-# the three hostnames on first request (state persisted in caddy-data volume).
+# the two hostnames on first request (state persisted in caddy-data volume).
 #
-# Caddy automatically uses its internal CA (self-signed) for localhost /
-# *.localhost / loopback domains, and ACME (Let's Encrypt) for public ones —
-# so no explicit tls directive is needed for either case.
+# Caddy uses its internal CA (self-signed) for localhost / *.localhost
+# automatically, and ACME (Let's Encrypt) for public hostnames — so no
+# explicit tls directive is needed in either environment.
+#
+# Object Storage / CDN is NOT proxied through Caddy. The recommended setup is
+# a Cloudflare CNAME `cdn.yourdomain.com` pointing at your bucket endpoint
+# with the orange-cloud proxy enabled — Cloudflare caches at the edge and
+# absorbs egress, so the VPS bandwidth is reserved for API + page traffic.
 
 {
 	# ADMIN_EMAIL receives Let's Encrypt expiry notices.
@@ -31,10 +36,4 @@
 		path /_next/static/*
 	}
 	header @static Cache-Control "public, max-age=31536000, immutable"
-}
-
-# Optional: expose MinIO uploads via a friendly subdomain. Comment out if
-# your media URLs go through signed S3 URLs instead.
-{$DOMAIN_CDN} {
-	reverse_proxy minio:9000
 }

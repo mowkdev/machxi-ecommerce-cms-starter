@@ -16,7 +16,7 @@
     "docker:dev": "node scripts/docker-dev.mjs",
     "docker:prod": "docker compose -f docker/prod/docker-compose.yml --env-file docker/prod/.env up -d",
     "docker:prod:local": "node scripts/docker-prod-local.mjs",
-    "docker:prod:down": "docker compose -f docker/prod/docker-compose.yml --env-file docker/prod/.env down",
+    "docker:prod:down": "docker compose -f docker/prod/docker-compose.yml -f docker/prod/docker-compose.local-minio.yml --env-file docker/prod/.env down",
     "setup:mcp": "node scripts/setup-mcp.mjs"
   },
   "pnpm": {

@@ -33,9 +33,10 @@ docker compose run --rm backend node_modules/.bin/medusa db:migrate
 echo "› running seed (idempotent)..."
 docker compose run --rm backend node_modules/.bin/medusa exec ./src/migration-scripts/initial-data-seed.js || true
 
-# Finally bring the app tier up. caddy comes last so users hit a fully-ready
-# stack on first request after a rolling deploy.
-docker compose up -d backend storefront caddy
+# Finally bring the app tier up. backend (HTTP) and backend-worker (BullMQ
+# jobs + subscribers) run from the same image with different MEDUSA_WORKER_MODE.
+# Caddy comes last so users hit a fully-ready stack on first request.
+docker compose up -d backend backend-worker storefront caddy
 
 docker compose ps
 echo "› deploy complete"
